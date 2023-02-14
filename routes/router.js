@@ -1,12 +1,17 @@
 const express = require("express");
-const router = express.Router();
+const router = new express.Router();
 const user = require("../models/userSchema");
+
+const controllers = require("../controllers/booksController");
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const upload = require("../multerconfig/storageConfig");
 
+// ==========
+router.post("/api/addBook", upload.single("bookImg"), controllers.bookpost);
+router.get("/api/getBookData", controllers.bookget);
 // -------------------------------
 
 // add user ---------------------------
@@ -62,63 +67,6 @@ router.get("/api/getUserData", async (req, res) => {
   }
 });
 
-// get individual user ---------------------------
-router.get("/getUser/:id", async (req, res) => {
-  try {
-    console.log("userdata", req.params);
-    const { id } = req.params;
-
-    const userIndividual = await user.findById({ _id: id });
-    console.log("userIndividual", userIndividual);
-    res.status(201).json({
-      UserList: [userIndividual],
-      StatusCode: 200,
-      Message: "success",
-    });
-  } catch (error) {
-    res.status(422).json({
-      StatusCode: 400,
-      Message: error,
-    });
-  }
-});
-
-// update user ---------------------------
-router.patch("/updateUser/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const updatedUser = await user.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
-
-    console.log("updated User", updatedUser);
-    res.status(201).json({ StatusCode: 200, Message: "success" });
-  } catch (error) {
-    res.status(422).json({
-      StatusCode: 400,
-      Message: error,
-    });
-  }
-});
-
-// delete user ---------------------------
-router.delete("/deleteUser/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const deleteUser = await user.findByIdAndDelete({ _id: id });
-
-    console.log("updated User", deleteUser);
-    res.status(201).json({ StatusCode: 200, Message: "success" });
-  } catch (error) {
-    res.status(422).json({
-      StatusCode: 400,
-      Message: error,
-    });
-  }
-});
-
 // ---------------------------
 
 // login
@@ -154,13 +102,16 @@ router.post("/api/login", (req, res, next) => {
             name: user[0].name,
             email: user[0].email,
             token: token,
+            StatusCode: 200,
+            Message: "success",
           });
         }
       });
     })
     .catch((err) => {
       res.status(422).json({
-        message: err,
+        StatusCode: 400,
+        Message: error,
       });
     });
 });
