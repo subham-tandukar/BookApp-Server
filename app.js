@@ -26,7 +26,7 @@ app.use("/uploads", express.static("./uploads"));
 app.use(
   fileupload({
     useTempFiles: true,
-    tempFileDir: "/uploads",
+    tempFileDir: "./uploads",
   })
 );
 
