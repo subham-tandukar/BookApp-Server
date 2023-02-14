@@ -1,10 +1,8 @@
 const books = require("../models/bookSchema");
-const fs = require("fs");
 
 // ----add book-------
 exports.bookpost = async (req, res) => {
   const file = req.file.filename;
-  const imageStream = fs.createReadStream(file);
   const {
     BookName,
     Auther,
@@ -18,7 +16,7 @@ exports.bookpost = async (req, res) => {
     Status,
   } = req.body;
 
-  if (!BookName || !Auther || !imageStream) {
+  if (!BookName || !Auther || !file) {
     res.status(401).json("Please fill the required input field");
   }
 
@@ -34,7 +32,7 @@ exports.bookpost = async (req, res) => {
       Quantity,
       Genre,
       Status,
-      Image: imageStream,
+      Image: file,
     });
     await bookData.save();
     res.status(201).json({
