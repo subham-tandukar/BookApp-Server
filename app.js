@@ -24,7 +24,7 @@ app.use(router);
 app.use(
   fileupload({
     useTempFiles: true,
-    tempFileDir: "./server/uploads",
+    tempFileDir: "uploads",
   })
 );
 app.use("/uploads", express.static("./uploads"));
