@@ -4,17 +4,7 @@ const app = express();
 const cors = require("cors");
 const router = require("./routes/router");
 const connectDB = require("./db/conn");
-const fileupload = require("express-fileupload");
 
-const fs = require("fs");
-
-fs.chmod("./uploads", 0o777, (err) => {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log("Folder permission set to writable");
-  }
-});
 
 var bodyParser = require("body-parser");
 app.use(bodyParser.json({ limit: "50mb" }));
@@ -31,12 +21,7 @@ app.use(cors());
 app.use(express.json());
 app.use(router);
 
-app.use(
-  fileupload({
-    useTempFiles: true,
-    tempFileDir: "/tmp/",
-  })
-);
+
 app.use("/uploads", express.static("./uploads"));
 
 app.get("/", (req, res) => {

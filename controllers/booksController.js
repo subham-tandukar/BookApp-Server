@@ -1,7 +1,15 @@
 const books = require("../models/bookSchema");
+const fileupload = require("express-fileupload");
+const app = express();
 
 // ----add book-------
 exports.bookpost = async (req, res) => {
+  app.use(
+    fileupload({
+      useTempFiles: true,
+      tempFileDir: "/tmp",
+    })
+  );
   const file = req.file.filename;
   const {
     BookName,
