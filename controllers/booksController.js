@@ -5,10 +5,11 @@ const app = express();
 
 // ----add book-------
 exports.bookpost = async (req, res) => {
+  const path = req.file.path;
   app.use(
     fileupload({
       useTempFiles: true,
-      tempFileDir: "/tmp",
+      tempFileDir: path,
     })
   );
   const file = req.file.filename;
