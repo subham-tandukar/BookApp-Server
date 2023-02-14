@@ -3,6 +3,15 @@ const books = require("../models/bookSchema");
 // ----add book-------
 exports.bookpost = async (req, res) => {
   const file = req.file.filename;
+  const uploadPath = path.join(__dirname, "uploads", fileName);
+
+  file.mv(uploadPath, (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send(err);
+    }
+  });
+
   const {
     BookName,
     Auther,
