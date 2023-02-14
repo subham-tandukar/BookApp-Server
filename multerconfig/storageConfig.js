@@ -8,8 +8,8 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, callback) => {
     const filename = `image-${Date.now()}.${file.originalname}`;
-    const imageStream = fs.createReadStream(filename);
-    callback(null, imageStream);
+    // const imageStream = fs.createReadStream(filename);
+    callback(null, filename);
   },
 });
 

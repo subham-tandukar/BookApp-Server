@@ -42,7 +42,7 @@ router.post("/api/addUser", async (req, res) => {
       Message: "success",
     });
   } catch (error) {
-    res.status(422).json({
+    res.status(401).json({
       StatusCode: 400,
       Message: error,
     });
@@ -60,7 +60,7 @@ router.get("/api/getUserData", async (req, res) => {
     });
     console.log("userdata", userdata);
   } catch (error) {
-    res.status(422).json({
+    res.status(401).json({
       StatusCode: 400,
       Message: error,
     });
@@ -77,13 +77,13 @@ router.post("/api/login", (req, res, next) => {
     .exec()
     .then((user) => {
       if (user.length < 1) {
-        return res.status(422).json({
+        return res.status(401).json({
           message: "User doesn't exist",
         });
       }
       bcrypt.compare(req.body.password, user[0].password, (err, result) => {
         if (!result) {
-          return res.status(422).json({
+          return res.status(401).json({
             message: "Password doesn't match",
           });
         }
@@ -109,9 +109,9 @@ router.post("/api/login", (req, res, next) => {
       });
     })
     .catch((err) => {
-      res.status(422).json({
+      res.status(401).json({
         StatusCode: 400,
-        Message: error,
+        Message: err,
       });
     });
 });

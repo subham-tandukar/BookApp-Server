@@ -17,7 +17,7 @@ exports.bookpost = async (req, res) => {
   } = req.body;
 
   if (!BookName || !Auther || !file) {
-    res.status(422).json("Please fill the required input field");
+    res.status(401).json("Please fill the required input field");
   } else {
     try {
       const bookData = new books({
@@ -39,7 +39,7 @@ exports.bookpost = async (req, res) => {
         Message: "success",
       });
     } catch (error) {
-      res.status(422).json({
+      res.status(401).json({
         StatusCode: 400,
         Message: error,
       });
@@ -57,7 +57,7 @@ exports.bookget = async (req, res) => {
       Message: "success",
     });
   } catch (error) {
-    res.status(422).json({
+    res.status(401).json({
       StatusCode: 400,
       Message: error,
     });
