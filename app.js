@@ -21,14 +21,13 @@ app.use(cors());
 app.use(express.json());
 app.use(router);
 
-app.use("/uploads", express.static("./uploads"));
-
 app.use(
   fileupload({
     useTempFiles: true,
     tempFileDir: "./uploads",
   })
 );
+app.use("/uploads", express.static("./uploads"));
 
 app.get("/", (req, res) => {
   res.json("server start");
