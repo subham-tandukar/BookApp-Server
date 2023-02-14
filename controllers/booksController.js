@@ -17,7 +17,7 @@ exports.bookpost = async (req, res) => {
   } = req.body;
 
   if (!BookName || !Auther || !file) {
-    res.status(401).json("Please fill the required input field");
+    res.status(422).json("Please fill the required input field");
   } else {
     try {
       const bookData = new books({
