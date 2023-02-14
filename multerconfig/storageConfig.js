@@ -1,4 +1,5 @@
 const multer = require("multer");
+const fs = require("fs");
 
 // storage config
 const storage = multer.diskStorage({
@@ -7,7 +8,8 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, callback) => {
     const filename = `image-${Date.now()}.${file.originalname}`;
-    callback(null, filename);
+    const imageStream = fs.createReadStream(filename);
+    callback(null, imageStream);
   },
 });
 
