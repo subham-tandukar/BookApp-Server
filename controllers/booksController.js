@@ -18,32 +18,32 @@ exports.bookpost = async (req, res) => {
 
   if (!BookName || !Auther || !file) {
     res.status(401).json("Please fill the required input field");
-  }
-
-  try {
-    const bookData = new books({
-      BookName,
-      Auther,
-      AgeGroup,
-      Page,
-      WordCount,
-      Edition,
-      YearPublished,
-      Quantity,
-      Genre,
-      Status,
-      Image: file,
-    });
-    await bookData.save();
-    res.status(201).json({
-      StatusCode: 200,
-      Message: "success",
-    });
-  } catch (error) {
-    res.status(422).json({
-      StatusCode: 400,
-      Message: error,
-    });
+  } else {
+    try {
+      const bookData = new books({
+        BookName,
+        Auther,
+        AgeGroup,
+        Page,
+        WordCount,
+        Edition,
+        YearPublished,
+        Quantity,
+        Genre,
+        Status,
+        Image: file,
+      });
+      await bookData.save();
+      res.status(201).json({
+        StatusCode: 200,
+        Message: "success",
+      });
+    } catch (error) {
+      res.status(422).json({
+        StatusCode: 400,
+        Message: error,
+      });
+    }
   }
 };
 
