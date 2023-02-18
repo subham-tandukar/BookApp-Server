@@ -100,7 +100,7 @@ router.post("/api/login", async (req, res) => {
 
     const data = {
       user: {
-        id: user.id,
+        UserID: user.UserID,
       },
     };
     const authToken = jwt.sign(data, JWT_SECRET);
