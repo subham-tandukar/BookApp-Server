@@ -13,11 +13,7 @@ const fetchuser = require("../middleware/fetchuser");
 const upload = require("../multerconfig/storageConfig");
 
 // ==========
-router.post(
-  "/api/book",
-  upload.single("bookImg"),
-  controllers.bookpost
-);
+router.post("/api/book", upload.single("bookImg"), controllers.bookpost);
 router.get("/api/getBookData", fetchuser, controllers.bookget);
 // -------------------------------
 
@@ -113,7 +109,7 @@ router.post("/api/login", async (req, res) => {
         {
           Name: user.name,
           Email: user.email,
-          UserID: user._id,
+          UserID: user.UserID,
         },
       ],
       Token: authToken,

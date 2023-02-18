@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const autoIncrement = require("mongoose-auto-increment");
+autoIncrement.initialize(mongoose.connection);
 
 const userSchema = new mongoose.Schema(
   {
@@ -15,10 +17,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    UserID: { type: Number, required: true },
   },
   { timestamps: true }
 );
 
-const users = new mongoose.model("user", userSchema);
+userSchema.plugin(autoIncrement.plugin, {
+  model: "user",
+  field: "UserID",
+  startAt: 1,
+});
 
-module.exports = users;
+module.exports = mongoose.model("user", userSchema);
