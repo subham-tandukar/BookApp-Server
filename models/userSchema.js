@@ -1,9 +1,13 @@
 const mongoose = require("mongoose");
-const autoIncrement = require("mongoose-auto-increment");
-autoIncrement.initialize(mongoose.connection);
+const { v4: uuidv4 } = require("uuid");
 
 const userSchema = new mongoose.Schema(
   {
+    UserID: {
+      type: String,
+      default: uuidv4,
+      unique: true,
+    },
     name: {
       type: String,
       required: true,
@@ -17,16 +21,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    UserID: { type: Number, required: true, unique: true },
   },
   { timestamps: true }
 );
 
-userSchema.plugin(autoIncrement.plugin, {
-  model: "user",
-  field: "UserID",
-  startAt: 1,
-  incrementBy: 1,
-});
+const users = new mongoose.model("user", userSchema);
 
-module.exports = mongoose.model("user", userSchema);
+module.exports = users;
