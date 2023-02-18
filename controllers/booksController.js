@@ -13,6 +13,7 @@ exports.bookpost = async (req, res) => {
     Quantity,
     Genre,
     Status,
+    Description,
     FLAG,
     UserID,
   } = req.body;
@@ -33,6 +34,7 @@ exports.bookpost = async (req, res) => {
         Quantity,
         Genre,
         Status,
+        Description,
         Image: file,
         UserID: UserID,
       });
