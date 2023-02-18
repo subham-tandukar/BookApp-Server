@@ -45,7 +45,7 @@ exports.bookpost = async (req, res) => {
       });
     } else if (FLAG === "S") {
       let bookdata;
-      if (UserID === -1) {
+      if (UserID === "-1") {
         bookdata = await books.find();
         res.status(201).json({
           BookData: bookdata.length <= 0 ? "No data" : bookdata,
@@ -53,7 +53,7 @@ exports.bookpost = async (req, res) => {
           Message: "success",
         });
       } else {
-        bookdata = await books.find({ UserID:UserID });
+        bookdata = await books.find({ UserID: UserID });
         res.status(201).json({
           BookData: bookdata.length <= 0 ? "No data" : bookdata,
           StatusCode: 200,
