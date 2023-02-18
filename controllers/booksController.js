@@ -34,7 +34,7 @@ exports.bookpost = async (req, res) => {
         Genre,
         Status,
         Image: file,
-        UserID,
+        UserID: UserID,
       });
       await bookData.save();
       res.status(201).json({
@@ -51,7 +51,7 @@ exports.bookpost = async (req, res) => {
           Message: "success",
         });
       } else {
-        bookdata = await books.find({ UserID });
+        bookdata = await books.find({ UserID:UserID });
         res.status(201).json({
           BookData: bookdata.length <= 0 ? "No data" : bookdata,
           StatusCode: 200,
