@@ -63,7 +63,7 @@ router.get("/api/getUserData", async (req, res) => {
   try {
     const userdata = await User.find();
     res.status(201).json({
-      UserData: userdata.length <= 0 ? null : userdata,
+      UserData: userdata.length <= 0 ? "No data" : userdata,
       StatusCode: 200,
       Message: "success",
     });

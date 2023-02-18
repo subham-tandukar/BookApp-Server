@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    UserID: { type: Number, required: true },
+    UserID: { type: Number, required: true, unique: true },
   },
   { timestamps: true }
 );
@@ -26,6 +26,7 @@ userSchema.plugin(autoIncrement.plugin, {
   model: "user",
   field: "UserID",
   startAt: 1,
+  incrementBy: 1,
 });
 
 module.exports = mongoose.model("user", userSchema);
