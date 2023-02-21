@@ -1,4 +1,5 @@
 const books = require("../models/bookSchema");
+const fs = require("fs");
 
 // ----add book-------
 exports.bookpost = async (req, res) => {
@@ -16,13 +17,17 @@ exports.bookpost = async (req, res) => {
     Description,
     FLAG,
     UserID,
+    Image,
   } = req.body;
   try {
     if (FLAG === "I") {
-      const file = req.file.filename;
-      if (!BookName || !Auther || !file) {
-        res.status(401).json("Please fill the required input field");
-      }
+      const base64Data = Image.split(";base64,").pop();
+      const ext = Image.split(";")[0].split("/")[1];
+      const imageName = `book_${Date.now()}.${ext}`;
+      const buffer = Buffer.from(base64Data, "base64");
+    
+      await fs.promises.writeFile(`uploads/${imageName}`, buffer);
+
       const bookData = new books({
         BookName,
         Auther,
@@ -35,7 +40,7 @@ exports.bookpost = async (req, res) => {
         Genre,
         Status,
         Description,
-        Image: file,
+        Image: imageName,
         UserID: UserID,
       });
       await bookData.save();
@@ -48,14 +53,14 @@ exports.bookpost = async (req, res) => {
       if (UserID === "-1") {
         bookdata = await books.find();
         res.status(201).json({
-          BookData: bookdata.length <= 0 ? "No data" : bookdata,
+          BookData: bookdata.length <= 0 ? null : bookdata,
           StatusCode: 200,
           Message: "success",
         });
       } else {
         bookdata = await books.find({ UserID: UserID });
         res.status(201).json({
-          BookData: bookdata.length <= 0 ? "No data" : bookdata,
+          BookData: bookdata.length <= 0 ? null : bookdata,
           StatusCode: 200,
           Message: "success",
         });

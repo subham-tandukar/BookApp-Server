@@ -8,13 +8,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = "Subhamisa@Boy";
 
-const fetchuser = require("../middleware/fetchuser");
-
-const upload = require("../multerconfig/storageConfig");
 
 // ==========
-router.post("/api/book", upload.single("bookImg"), controllers.bookpost);
-router.get("/api/getBookData", fetchuser, controllers.bookget);
+router.post("/api/book", controllers.bookpost);
 // -------------------------------
 
 // add user ---------------------------
@@ -123,67 +119,5 @@ router.post("/api/login", async (req, res) => {
     });
   }
 });
-
-router.post("/api/getUser", fetchuser, async (req, res) => {
-  try {
-    let userId = req.user.id;
-    const user = await User.findById(userId).select("-password");
-    res.status(201).json({
-      UserData: user,
-      StatusCode: 200,
-      Message: "success",
-    });
-  } catch (error) {
-    res.status(500).json({
-      StatusCode: 400,
-      Message: "Internal Server Error",
-    });
-  }
-});
-
-// router.post("/api/login", (req, res, next) => {
-//   user
-//     .find({ email: req.body.email })
-//     .exec()
-//     .then((user) => {
-//       if (user.length < 1) {
-//         return res.status(401).json({
-//           message: "User doesn't exist",
-//         });
-//       }
-//       bcrypt.compare(req.body.password, user[0].password, (err, result) => {
-//         if (!result) {
-//           return res.status(401).json({
-//             message: "Password doesn't match",
-//           });
-//         }
-//         if (result) {
-//           const token = jwt.sign(
-//             {
-//               name: user[0].name,
-//               email: user[0].email,
-//             },
-//             "this is dummy text",
-//             {
-//               expiresIn: "24h",
-//             }
-//           );
-//           res.status(201).json({
-//             name: user[0].name,
-//             email: user[0].email,
-//             token: token,
-//             StatusCode: 200,
-//             Message: "success",
-//           });
-//         }
-//       });
-//     })
-//     .catch((err) => {
-//       res.status(401).json({
-//         StatusCode: 400,
-//         Message: err,
-//       });
-//     });
-// });
 
 module.exports = router;
