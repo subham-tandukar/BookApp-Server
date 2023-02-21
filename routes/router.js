@@ -2,15 +2,16 @@ const express = require("express");
 const router = new express.Router();
 const User = require("../models/userSchema");
 
-const controllers = require("../controllers/booksController");
+const bookControllers = require("../controllers/booksController");
+const countControllers = require("../controllers/countController");
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = "Subhamisa@Boy";
 
-
 // ==========
-router.post("/api/book", controllers.bookpost);
+router.post("/api/book", bookControllers.bookpost);
+router.get("/api/count", countControllers.count);
 // -------------------------------
 
 // add user ---------------------------

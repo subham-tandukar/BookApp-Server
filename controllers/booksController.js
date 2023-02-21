@@ -1,7 +1,7 @@
 const books = require("../models/bookSchema");
 const fs = require("fs");
 
-// ----add book-------
+// ---- book ----
 exports.bookpost = async (req, res) => {
   const {
     BookName,
@@ -76,19 +76,3 @@ exports.bookpost = async (req, res) => {
   }
 };
 
-// -----get book---------
-exports.bookget = async (req, res) => {
-  try {
-    const bookdata = await books.find({ user: req.user.id });
-    res.status(201).json({
-      BookData: bookdata.length <= 0 ? null : bookdata,
-      StatusCode: 200,
-      Message: "success",
-    });
-  } catch (error) {
-    res.status(401).json({
-      StatusCode: 400,
-      Message: error,
-    });
-  }
-};
