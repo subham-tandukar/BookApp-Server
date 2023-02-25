@@ -37,6 +37,7 @@ exports.changePassword = async (req, res) => {
 
       // Send response with success message
       res.status(201).json({
+        StatusCode: 200,
         Message: "Password changed successfully",
       });
     }

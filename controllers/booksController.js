@@ -63,24 +63,45 @@ exports.postBook = async (req, res) => {
 exports.getBook = async (req, res) => {
   try {
     const UserID = req.query.UserID;
+    const Status = req.query.Status;
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 6;
     const startIndex = (page - 1) * limit;
 
     let bookdata;
-    if (UserID === "-1") {
-      bookdata = await books.find().skip(startIndex).limit(limit);
+    if (UserID && Status) {
+      bookdata = await books
+        .find({ UserID: UserID, Status: Status })
+        .skip(startIndex)
+        .limit(limit);
+      res.status(201).json({
+        BookData: bookdata.length <= 0 ? null : bookdata,
+        StatusCode: 200,
+        Message: "success",
+      });
+    } else if (UserID) {
+      bookdata = await books
+        .find({ UserID: UserID })
+        .skip(startIndex)
+        .limit(limit);
+      res.status(201).json({
+        BookData: bookdata.length <= 0 ? null : bookdata,
+        StatusCode: 200,
+        Message: "success",
+      });
+    } else if (Status) {
+      bookdata = await books
+        .find({ Status: Status })
+        .skip(startIndex)
+        .limit(limit);
       res.status(201).json({
         BookData: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
         Message: "success",
       });
     } else {
-      bookdata = await books
-        .find({ UserID: UserID })
-        .skip(startIndex)
-        .limit(limit);
+      bookdata = await books.find().skip(startIndex).limit(limit);
       res.status(201).json({
         BookData: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
