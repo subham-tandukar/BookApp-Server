@@ -5,17 +5,17 @@ const JWT_SECRET = "Subhamisa@Boy";
 
 // --- login ---
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
+  const { Email, Password } = req.body;
 
   try {
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ Email });
     if (!user) {
       return res.status(401).json({
         Message: "User doesn't exist",
       });
     }
 
-    const passwordCompare = await bcrypt.compare(password, user.password);
+    const passwordCompare = await bcrypt.compare(Password, user.Password);
     if (!passwordCompare) {
       return res.status(401).json({
         Message: "Password doesn't match",
@@ -31,8 +31,8 @@ exports.login = async (req, res) => {
     res.status(201).json({
       Login: [
         {
-          Name: user.name,
-          Email: user.email,
+          Name: user.Name,
+          Email: user.Email,
           UserID: user._id,
         },
       ],

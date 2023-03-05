@@ -52,7 +52,7 @@ exports.postBook = async (req, res) => {
       res.status(400).json({ StatusCode: 400, Message: "Invalid flag" });
     }
   } catch (error) {
-    res.status(500).json({
+    res.status(401).json({
       StatusCode: 400,
       Message: error,
     });
@@ -76,7 +76,7 @@ exports.getBook = async (req, res) => {
         .skip(startIndex)
         .limit(limit);
       res.status(201).json({
-        BookData: bookdata.length <= 0 ? null : bookdata,
+        Values: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
         Message: "success",
       });
@@ -86,7 +86,7 @@ exports.getBook = async (req, res) => {
         .skip(startIndex)
         .limit(limit);
       res.status(201).json({
-        BookData: bookdata.length <= 0 ? null : bookdata,
+        Values: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
         Message: "success",
       });
@@ -96,14 +96,14 @@ exports.getBook = async (req, res) => {
         .skip(startIndex)
         .limit(limit);
       res.status(201).json({
-        BookData: bookdata.length <= 0 ? null : bookdata,
+        Values: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
         Message: "success",
       });
     } else {
       bookdata = await books.find().skip(startIndex).limit(limit);
       res.status(201).json({
-        BookData: bookdata.length <= 0 ? null : bookdata,
+        Values: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
         Message: "success",
       });
