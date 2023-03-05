@@ -6,7 +6,7 @@ exports.changePassword = async (req, res) => {
   const { Email, NewPassword, OldPassword } = req.body;
   try {
     // Find the user with the given email
-    let user = await User.findOne({ email: Email });
+    let user = await User.findOne({ Email: Email });
 
     // If user doesn't exist, send error response
     if (!user) {
@@ -18,7 +18,7 @@ exports.changePassword = async (req, res) => {
     // Check if old password is correct
     const isOldPasswordCorrect = await bcrypt.compare(
       OldPassword,
-      user.password
+      user.Password
     );
     if (!isOldPasswordCorrect) {
       return res.status(401).json({ Message: "Incorrect old password" });
@@ -32,7 +32,7 @@ exports.changePassword = async (req, res) => {
       return res.status(401).json({ Message: "Try a new password" });
     } else {
       // Update the user's password in the database
-      user.password = hashedPassword;
+      user.Password = hashedPassword;
       await user.save();
 
       // Send response with success message
