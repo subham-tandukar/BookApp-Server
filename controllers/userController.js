@@ -60,7 +60,7 @@ exports.user = async (req, res) => {
 
       tarnsporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-          res.status(400).json({ error: "Email not send" });
+          res.status(400).json({ error: error });
         } else {
           res.status(201).json({
             OTP: otp,
