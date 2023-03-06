@@ -8,12 +8,13 @@ const loginControllers = require("../controllers/loginController");
 const cpControllers = require("../controllers/changePasswordController");
 
 // ==============================
+router.post("/api/user", userControllers.user);
+router.post("/api/otp", userControllers.otp);
+router.post("/api/login", loginControllers.login);
 router.post("/api/book", bookControllers.postBook);
 router.get("/api/getBook", bookControllers.getBook);
 router.get("/api/count", countControllers.count);
-router.post("/api/user", userControllers.user);
 router.get("/api/getNewUser", userControllers.getNewUser);
-router.post("/api/login", loginControllers.login);
 router.post("/api/change-password", cpControllers.changePassword);
 // -------------------------------
 

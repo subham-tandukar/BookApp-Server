@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema(
     Name: {
       type: String,
       required: true,
+      trim: true,
     },
     Email: {
       type: String,
@@ -14,6 +15,13 @@ const userSchema = new mongoose.Schema(
     Password: {
       type: String,
       required: true,
+    },
+    Status: {
+      type: String,
+      default: "Unverified",
+    },
+    OTP: {
+      type: String,
     },
   },
   { timestamps: true }

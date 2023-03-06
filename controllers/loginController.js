@@ -28,18 +28,25 @@ exports.login = async (req, res) => {
       },
     };
     const authToken = jwt.sign(data, JWT_SECRET);
-    res.status(201).json({
-      Login: [
-        {
-          Name: user.Name,
-          Email: user.Email,
-          UserID: user._id,
-        },
-      ],
-      Token: authToken,
-      StatusCode: 200,
-      Message: "success",
-    });
+    if (user.Status === "Verified") {
+      res.status(201).json({
+        Login: [
+          {
+            Name: user.Name,
+            Email: user.Email,
+            UserID: user._id,
+          },
+        ],
+        Token: authToken,
+        StatusCode: 200,
+        Message: "success",
+      });
+    } else {
+      res.status(401).json({
+        StatusCode: 400,
+        Message: "Please verify your email first",
+      });
+    }
   } catch (err) {
     res.status(401).json({
       StatusCode: 400,

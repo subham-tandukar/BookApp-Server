@@ -1,7 +1,18 @@
 const User = require("../models/userSchema");
+const Otp = require("../models/otpSchema");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const nodeMailer = require("nodemailer");
 const JWT_SECRET = "Subhamisa@Boy";
+
+// email config
+const tarnsporter = nodeMailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.PASSWORD,
+  },
+});
 
 // --- user ---
 exports.user = async (req, res) => {
@@ -16,6 +27,8 @@ exports.user = async (req, res) => {
         });
       }
 
+      const otp = Math.floor(100000 + Math.random() * 900000);
+
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(Password, salt);
 
@@ -25,16 +38,38 @@ exports.user = async (req, res) => {
         Password: secPass,
       });
 
+      const update = { OTP: otp };
+      const options = { new: true }; // Return the updated document
+
+      await User.findOneAndUpdate({ Email }, update, options);
+
       const data = {
         user: {
           id: user.id,
         },
       };
+
       const authToken = jwt.sign(data, JWT_SECRET);
-      res.status(201).json({
-        authToken,
-        StatusCode: 200,
-        Message: "success",
+
+      const mailOptions = {
+        from: process.env.EMAIL,
+        to: Email,
+        subject: "Sending Eamil For Otp Validation",
+        text: `OTP:- ${otp}`,
+      };
+
+      tarnsporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          res.status(400).json({ error: "Email not send" });
+        } else {
+          res.status(201).json({
+            OTP: otp,
+            authToken,
+            Status: user.Status,
+            StatusCode: 200,
+            Message: "success",
+          });
+        }
       });
     } else if (FLAG === "S") {
       const userdata = await User.find();
@@ -65,6 +100,47 @@ exports.getNewUser = async (req, res) => {
       Message: "success",
     });
     console.log("userdata", userdata);
+  } catch (error) {
+    res.status(401).json({
+      StatusCode: 400,
+      Message: error,
+    });
+  }
+};
+
+// --- otp ---
+exports.otp = async (req, res) => {
+  const { OTP, Email } = req.body;
+  try {
+    let user = await User.findOne({ Email });
+
+    if (user) {
+      const otpData = new Otp({
+        Email,
+        OTP,
+      });
+      if (OTP === user.OTP) {
+        const update = { Status: "Verified" };
+        const options = { new: true }; // Return the updated document
+
+        await User.findOneAndUpdate({ Email }, update, options);
+
+        await otpData.save();
+        res.status(201).json({
+          Status: "Verified",
+          StatusCode: 200,
+          Message: "success",
+        });
+      } else {
+        return res.status(422).json({
+          Message: "Invalid OTP",
+        });
+      }
+    } else {
+      return res.status(422).json({
+        Message: "Email doesn't exist",
+      });
+    }
   } catch (error) {
     res.status(401).json({
       StatusCode: 400,
