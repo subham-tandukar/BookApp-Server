@@ -56,22 +56,29 @@ exports.user = async (req, res) => {
         from: process.env.EMAIL,
         to: Email,
         subject: "HTDRL Email Verification",
-        html: `<h5><strong>Verify your email address</strong></h5>
-                <br>
-                <span>Thanks for signing up. We wnat to make sure it's really you. Please enter the following verification code given below. If you don't want to create an account, you can ignore this message.</span>
-                <br>
-                <h5><strong>Verification Code</strong></h5>
-                <h3><strong>${otp}</strong></h3>`,
+        text: `OTP: ${otp}`,
+        // html: `<h5><strong>Verify your email address</strong></h5>
+        //         <br>
+        //         <span>Thanks for signing up. We wnat to make sure it's really you. Please enter the following verification code given below. If you don't want to create an account, you can ignore this message.</span>
+        //         <br>
+        //         <h5><strong>Verification Code</strong></h5>
+        //         <h3><strong>${otp}</strong></h3>`,
       };
 
       tarnsporter.sendMail(mailOptions, (error, info) => {
-        res.status(201).json({
-          OTP: otp,
-          authToken,
-          Status: user.Status,
-          StatusCode: 200,
-          Message: "success",
-        });
+        if (error) {
+          console.log("error", error);
+          res.status(400).json({ error: "email not send" });
+        } else {
+          console.log("Email sent", info.response);
+          res.status(201).json({
+            OTP: otp,
+            authToken,
+            Status: user.Status,
+            StatusCode: 200,
+            Message: "success",
+          });
+        }
       });
     } else if (FLAG === "S") {
       const userdata = await User.find();
