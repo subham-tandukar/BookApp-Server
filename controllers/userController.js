@@ -59,17 +59,13 @@ exports.user = async (req, res) => {
       };
 
       tarnsporter.sendMail(mailOptions, (error, info) => {
-        if (info) {
-          res.status(201).json({
-            OTP: otp,
-            authToken,
-            Status: user.Status,
-            StatusCode: 200,
-            Message: "success",
-          });
-        } else {
-          res.status(400).json({ error: "Email not send" });
-        }
+        res.status(201).json({
+          OTP: otp,
+          authToken,
+          Status: user.Status,
+          StatusCode: 200,
+          Message: "success",
+        });
       });
     } else if (FLAG === "S") {
       const userdata = await User.find();
