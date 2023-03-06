@@ -59,9 +59,7 @@ exports.user = async (req, res) => {
       };
 
       tarnsporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          res.status(400).json({ error: error });
-        } else {
+        if (!error) {
           res.status(201).json({
             OTP: otp,
             authToken,
@@ -69,6 +67,8 @@ exports.user = async (req, res) => {
             StatusCode: 200,
             Message: "success",
           });
+        } else {
+          res.status(400).json({ error: "Email not send" });
         }
       });
     } else if (FLAG === "S") {
