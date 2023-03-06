@@ -8,6 +8,7 @@ const JWT_SECRET = "Subhamisa@Boy";
 // email config
 const tarnsporter = nodeMailer.createTransport({
   service: "gmail",
+  port: process.env.PORT || 8009,
   auth: {
     user: process.env.EMAIL,
     pass: process.env.PASSWORD,
@@ -54,8 +55,13 @@ exports.user = async (req, res) => {
       const mailOptions = {
         from: process.env.EMAIL,
         to: Email,
-        subject: "Sending Eamil For Otp Validation",
-        text: `OTP:- ${otp}`,
+        subject: "HTDRL Email Verification",
+        html: `<h5><strong>Verify your email address</strong></h5>
+                <br>
+                <span>Thanks for signing up. We wnat to make sure it's really you. Please enter the following verification code given below. If you don't want to create an account, you can ignore this message.</span>
+                <br>
+                <h5><strong>Verification Code</strong></h5>
+                <h3><strong>${otp}</strong></h3>`,
       };
 
       tarnsporter.sendMail(mailOptions, (error, info) => {
