@@ -59,7 +59,7 @@ exports.user = async (req, res) => {
       };
 
       tarnsporter.sendMail(mailOptions, (error, info) => {
-        if (!error) {
+        if (info) {
           res.status(201).json({
             OTP: otp,
             authToken,
