@@ -4,12 +4,14 @@ const router = new express.Router();
 const bookControllers = require("../controllers/booksController");
 const countControllers = require("../controllers/countController");
 const userControllers = require("../controllers/userController");
+const otpControllers = require("../controllers/otpController");
 const loginControllers = require("../controllers/loginController");
 const cpControllers = require("../controllers/changePasswordController");
 
 // ==============================
 router.post("/api/user", userControllers.user);
-router.post("/api/otp", userControllers.otp);
+router.post("/api/otp", otpControllers.otp);
+router.post("/api/resendOtp", otpControllers.resendOtp);
 router.post("/api/login", loginControllers.login);
 router.post("/api/book", bookControllers.postBook);
 router.get("/api/getBook", bookControllers.getBook);

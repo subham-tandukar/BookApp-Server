@@ -1,5 +1,4 @@
 const User = require("../models/userSchema");
-const Otp = require("../models/otpSchema");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodeMailer = require("nodemailer");
@@ -146,43 +145,4 @@ exports.getNewUser = async (req, res) => {
   }
 };
 
-// --- otp ---
-exports.otp = async (req, res) => {
-  const { OTP, Email } = req.body;
-  try {
-    let user = await User.findOne({ Email });
 
-    if (user) {
-      const otpData = new Otp({
-        Email,
-        OTP,
-      });
-      if (OTP === user.OTP) {
-        const update = { Status: "Verified" };
-        const options = { new: true }; // Return the updated document
-
-        await User.findOneAndUpdate({ Email }, update, options);
-
-        await otpData.save();
-        res.status(201).json({
-          Status: "Verified",
-          StatusCode: 200,
-          Message: "success",
-        });
-      } else {
-        return res.status(422).json({
-          Message: "Invalid OTP",
-        });
-      }
-    } else {
-      return res.status(422).json({
-        Message: "Email doesn't exist",
-      });
-    }
-  } catch (error) {
-    res.status(401).json({
-      StatusCode: 400,
-      Message: "OTP already used",
-    });
-  }
-};
