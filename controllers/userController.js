@@ -7,7 +7,7 @@ const JWT_SECRET = "Subhamisa@Boy";
 
 // email config
 const transporter = nodeMailer.createTransport({
-  host: "smtp.ethereal.email",
+  host: "smtp.gmail.com",
   port: 587,
   secure: false,
   auth: {
