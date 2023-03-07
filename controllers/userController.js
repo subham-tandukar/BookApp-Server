@@ -97,7 +97,7 @@ exports.user = async (req, res) => {
         if (error) {
           res.status(401).json({
             StatusCode: 400,
-            Message: error,
+            Message: "Email not send",
           });
         } else {
           res.status(201).json({
@@ -182,7 +182,7 @@ exports.otp = async (req, res) => {
   } catch (error) {
     res.status(401).json({
       StatusCode: 400,
-      Message: error,
+      Message: "OTP already used",
     });
   }
 };
