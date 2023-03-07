@@ -5,17 +5,6 @@ const jwt = require("jsonwebtoken");
 const nodeMailer = require("nodemailer");
 const JWT_SECRET = "Subhamisa@Boy";
 
-// email config
-const transporter = nodeMailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.PASSWORD,
-  },
-});
-
 // --- user ---
 exports.user = async (req, res) => {
   const { Name, Email, Password, FLAG } = req.body;
@@ -53,6 +42,14 @@ exports.user = async (req, res) => {
 
       const authToken = jwt.sign(data, JWT_SECRET);
 
+      // email config
+      let transporter = await nodeMailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL,
+          pass: process.env.PASSWORD,
+        },
+      });
       const mailOptions = {
         from: process.env.EMAIL,
         to: Email,
@@ -96,7 +93,7 @@ exports.user = async (req, res) => {
            </body>
          </html>`,
       };
-      transporter.sendMail(mailOptions, (error, info) => {
+      await transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
           res.status(401).json({
             StatusCode: 400,
