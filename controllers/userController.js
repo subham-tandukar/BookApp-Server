@@ -100,7 +100,7 @@ exports.user = async (req, res) => {
         if (error) {
           res.status(401).json({
             StatusCode: 400,
-            Message: "Mail not sent",
+            Message: error,
           });
         } else {
           res.status(201).json({
