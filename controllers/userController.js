@@ -7,6 +7,7 @@ const JWT_SECRET = "Subhamisa@Boy";
 
 // email config
 const tarnsporter = nodeMailer.createTransport({
+  sendmail: true,
   service: "gmail",
   port: process.env.PORT || 8009,
   auth: {
