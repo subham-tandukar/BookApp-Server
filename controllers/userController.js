@@ -44,8 +44,9 @@ exports.user = async (req, res) => {
 
       // email config
       let transporter = await nodeMailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
+        service: 'gmail',
+        type: "SMTP",
+        host: "smtp.gmail.com",
         secure: true,
         auth: {
           user: process.env.EMAIL,
