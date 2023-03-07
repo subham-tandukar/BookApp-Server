@@ -97,6 +97,7 @@ exports.user = async (req, res) => {
       };
 
       let info = await tarnsporter.sendMail(mailOptions);
+      console.log("mahima", info);
       if (info.accepted.length > 0) {
         res.status(201).json({
           OTP: otp,
