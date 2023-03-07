@@ -96,17 +96,15 @@ exports.user = async (req, res) => {
          </html>`,
       };
 
-      let info = await tarnsporter.sendMail(mailOptions);
-      console.log("mahima", info);
-      if (info.accepted.length > 0) {
-        res.status(201).json({
-          OTP: otp,
-          authToken,
-          Status: user.Status,
-          StatusCode: 200,
-          Message: "success",
-        });
-      }
+      tarnsporter.sendMail(mailOptions);
+
+      res.status(201).json({
+        OTP: otp,
+        authToken,
+        Status: user.Status,
+        StatusCode: 200,
+        Message: "success",
+      });
     } else if (FLAG === "S") {
       const userdata = await User.find();
       res.status(201).json({
