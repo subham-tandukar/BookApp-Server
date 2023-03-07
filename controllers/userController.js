@@ -56,30 +56,56 @@ exports.user = async (req, res) => {
         from: process.env.EMAIL,
         to: Email,
         subject: "HTDRL Email Verification",
-        text: `OTP: ${otp}`,
-        // html: `<h5><strong>Verify your email address</strong></h5>
-        //         <br>
-        //         <span>Thanks for signing up. We wnat to make sure it's really you. Please enter the following verification code given below. If you don't want to create an account, you can ignore this message.</span>
-        //         <br>
-        //         <h5><strong>Verification Code</strong></h5>
-        //         <h3><strong>${otp}</strong></h3>`,
+        // text: `OTP: ${otp}`,
+        html: `<html>
+           <head>
+             <style>
+               .verification-code {
+                 font-weight: bold;
+                 color: #6561a1;
+               }
+               .text-center{
+                text-align: center;
+               }
+               .dark{
+                color: #000;
+               }
+               .mb-0{
+                margin-bottom: 0;
+               }
+               .mt-3{
+                margin-top: 1rem;
+               }
+               .mt-5{
+                margin-top: 0.5rem;
+               }
+               .copy{
+                border: 1px solid #dfdfdf;
+                cursor: pointer;
+                padding:0.5rem;
+               }
+             </style>
+           </head>
+           <body>
+             <h3 class="dark"><strong>Verify your email address</strong></h3>
+             <span class="dark">Thanks for signing up. We want to make sure it's really you. Please enter the following verification code given below. If you don't want to create an account, you can ignore this message.</span>
+             <br>
+             <h3 class="text-center mb-0 mt-3 dark"><strong>Verification Code</strong></h3>
+             <h1 class="verification-code text-center mt-5"><strong>${otp}</strong></h1>
+           </body>
+         </html>`,
       };
 
-      tarnsporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.log("error", error);
-          res.status(400).json({ error: "email not send" });
-        } else {
-          console.log("Email sent", info.response);
-          res.status(201).json({
-            OTP: otp,
-            authToken,
-            Status: user.Status,
-            StatusCode: 200,
-            Message: "success",
-          });
-        }
-      });
+      let info = await tarnsporter.sendMail(mailOptions);
+      if (info.accepted.length > 0) {
+        res.status(201).json({
+          OTP: otp,
+          authToken,
+          Status: user.Status,
+          StatusCode: 200,
+          Message: "success",
+        });
+      }
     } else if (FLAG === "S") {
       const userdata = await User.find();
       res.status(201).json({
