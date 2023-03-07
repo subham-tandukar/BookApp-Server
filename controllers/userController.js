@@ -6,10 +6,10 @@ const nodeMailer = require("nodemailer");
 const JWT_SECRET = "Subhamisa@Boy";
 
 // email config
-const tarnsporter = nodeMailer.createTransport({
-  sendmail: true,
-  service: "gmail",
-  port: process.env.PORT || 8009,
+const transporter = nodeMailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL,
     pass: process.env.PASSWORD,
@@ -96,15 +96,21 @@ exports.user = async (req, res) => {
            </body>
          </html>`,
       };
-
-      tarnsporter.sendMail(mailOptions);
-
-      res.status(201).json({
-        OTP: otp,
-        authToken,
-        Status: user.Status,
-        StatusCode: 200,
-        Message: "success",
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          res.status(401).json({
+            StatusCode: 400,
+            Message: "Mail not sent",
+          });
+        } else {
+          res.status(201).json({
+            OTP: otp,
+            authToken,
+            Status: user.Status,
+            StatusCode: 200,
+            Message: "success",
+          });
+        }
       });
     } else if (FLAG === "S") {
       const userdata = await User.find();
