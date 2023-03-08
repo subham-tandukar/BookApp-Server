@@ -11,6 +11,9 @@ exports.user = async (req, res) => {
     if (FLAG === "I") {
       let user = await User.findOne({ Email: Email });
 
+      // if (user.Status === "Unverified") {
+      //   await User.findOneAndDelete({ Email });
+      // }
       if (user) {
         return res.status(422).json({
           Message: "This email already exist",
@@ -144,5 +147,3 @@ exports.getNewUser = async (req, res) => {
     });
   }
 };
-
-

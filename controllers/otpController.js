@@ -1,5 +1,4 @@
 const User = require("../models/userSchema");
-const Otp = require("../models/otpSchema");
 const nodeMailer = require("nodemailer");
 
 // --- otp ---
@@ -8,33 +7,28 @@ exports.otp = async (req, res) => {
   try {
     let user = await User.findOne({ Email });
 
-    if (user) {
-      const otpData = new Otp({
-        Email,
-        OTP,
-      });
-      if (OTP === user.OTP) {
-        const update = { Status: "Verified" };
-        const options = { new: true }; // Return the updated document
-
-        await User.findOneAndUpdate({ Email }, update, options);
-
-        await otpData.save();
-        res.status(201).json({
-          Status: "Verified",
-          StatusCode: 200,
-          Message: "success",
-        });
-      } else {
-        return res.status(422).json({
-          Message: "Invalid OTP",
-        });
-      }
-    } else {
+    if (!user) {
       return res.status(422).json({
         Message: "Email doesn't exist",
       });
     }
+
+    if (OTP !== user.OTP) {
+      return res.status(422).json({
+        Message: "Invalid OTP",
+      });
+    }
+
+    const update = { Status: "Verified" };
+    const options = { new: true }; // Return the updated document
+
+    await User.findOneAndUpdate({ Email }, update, options);
+
+    res.status(201).json({
+      Status: "Verified",
+      StatusCode: 200,
+      Message: "success",
+    });
   } catch (error) {
     res.status(401).json({
       StatusCode: 400,
@@ -59,7 +53,11 @@ exports.resendOtp = async (req, res) => {
         { new: true }
       );
       await updateData.save();
-      await Otp.findOneAndDelete({ Email });
+
+      const update = { Status: "Unverified" };
+      const options = { new: true }; // Return the updated document
+
+      await User.findOneAndUpdate({ Email }, update, options);
 
       // email config
       let transporter = await nodeMailer.createTransport({
