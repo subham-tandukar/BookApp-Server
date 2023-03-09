@@ -18,6 +18,7 @@ router.get("/api/getBook", bookControllers.getBook);
 router.get("/api/count", countControllers.count);
 router.get("/api/getNewUser", userControllers.getNewUser);
 router.post("/api/change-password", cpControllers.changePassword);
+router.post("/api/forget-password", cpControllers.forgetPassword);
 // -------------------------------
 
 module.exports = router;
