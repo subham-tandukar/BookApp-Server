@@ -1,5 +1,6 @@
 const books = require("../models/bookSchema");
 const fs = require("fs");
+const cloudinary = require("../cloudinary");
 
 // ---- add book ----
 exports.postBook = async (req, res) => {
@@ -70,17 +71,14 @@ exports.getBook = async (req, res) => {
     const startIndex = (page - 1) * limit;
 
     let bookdata;
-    if (UserID && Status) {
-      bookdata = await books
-        .find({ UserID: UserID, Status: Status })
-        .skip(startIndex)
-        .limit(limit);
+    if (UserID === "-1" && Status === "-1") {
+      bookdata = await books.find().skip(startIndex).limit(limit);
       res.status(201).json({
         Values: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
         Message: "success",
       });
-    } else if (UserID) {
+    } else if (UserID && Status === "-1") {
       bookdata = await books
         .find({ UserID: UserID })
         .skip(startIndex)
@@ -90,7 +88,7 @@ exports.getBook = async (req, res) => {
         StatusCode: 200,
         Message: "success",
       });
-    } else if (Status) {
+    } else if (Status && UserID === "-1") {
       bookdata = await books
         .find({ Status: Status })
         .skip(startIndex)
@@ -100,13 +98,17 @@ exports.getBook = async (req, res) => {
         StatusCode: 200,
         Message: "success",
       });
-    } else {
-      bookdata = await books.find().skip(startIndex).limit(limit);
+    } else if (UserID && Status) {
+      bookdata = await books
+        .find({ UserID: UserID, Status: Status })
+        .skip(startIndex)
+        .limit(limit);
       res.status(201).json({
         Values: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
         Message: "success",
       });
+    } else {
     }
   } catch (error) {
     res.status(401).json({
