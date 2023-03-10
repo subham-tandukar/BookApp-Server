@@ -3,10 +3,11 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodeMailer = require("nodemailer");
 const JWT_SECRET = "Subhamisa@Boy";
+const cloudinary = require("../cloudinary");
 
 // --- user ---
 exports.user = async (req, res) => {
-  const { Name, Email, Password, FLAG } = req.body;
+  const { Name, Email, Password, FLAG, Profile } = req.body;
   try {
     if (FLAG === "I") {
       let user = await User.findOne({ Email: Email });
@@ -20,12 +21,25 @@ exports.user = async (req, res) => {
         });
       }
 
+      if (!Profile) {
+        Profile =
+          "https://res.cloudinary.com/de3eu0mvq/image/upload/v1678434591/profile/taztcmb8jl9pxe1yqzd3.png";
+      }
+
+      const profileImg = await cloudinary.uploader.upload(Profile, {
+        folder: "profile",
+      });
+
       const otp = Math.floor(100000 + Math.random() * 900000);
 
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(Password, salt);
 
       user = await User.create({
+        Profile: {
+          public_id: profileImg.public_id,
+          url: profileImg.secure_url,
+        },
         Name: Name,
         Email: Email,
         Password: secPass,

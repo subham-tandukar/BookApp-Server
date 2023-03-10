@@ -22,12 +22,16 @@ exports.postBook = async (req, res) => {
   } = req.body;
   try {
     if (FLAG === "I") {
-      const base64Data = Image.split(";base64,").pop();
-      const ext = Image.split(";")[0].split("/")[1];
-      const imageName = `book_${Date.now()}.${ext}`;
-      const buffer = Buffer.from(base64Data, "base64");
+      // const base64Data = Image.split(";base64,").pop();
+      // const ext = Image.split(";")[0].split("/")[1];
+      // const imageName = `book_${Date.now()}.${ext}`;
+      // const buffer = Buffer.from(base64Data, "base64");
 
-      await fs.promises.writeFile(`uploads/${imageName}`, buffer);
+      // await fs.promises.writeFile(`uploads/${imageName}`, buffer);
+
+      const bookImg = await cloudinary.uploader.upload(Image, {
+        folder: "books",
+      });
 
       const bookData = new books({
         BookName,
@@ -41,11 +45,15 @@ exports.postBook = async (req, res) => {
         Genre,
         Status,
         Description,
-        Image: imageName,
+        Image: {
+          public_id: bookImg.public_id,
+          url: bookImg.secure_url,
+        },
         UserID: UserID,
       });
       await bookData.save();
       res.status(201).json({
+        Image: bookData.Image,
         StatusCode: 200,
         Message: "success",
       });
