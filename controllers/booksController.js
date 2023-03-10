@@ -73,6 +73,16 @@ exports.getBook = async (req, res) => {
   try {
     const UserID = req.query.UserID;
     const Status = req.query.Status;
+    const Search = req.query.Search;
+
+    let query = {};
+
+    if (Search) {
+      query.$or = [
+        { BookName: { $regex: Search, $options: "i" } }, // search by Title
+        { Auther: { $regex: Search, $options: "i" } }, // search by Author
+      ];
+    }
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 6;
@@ -80,7 +90,7 @@ exports.getBook = async (req, res) => {
 
     let bookdata;
     if (UserID === "-1" && Status === "-1") {
-      bookdata = await books.find().skip(startIndex).limit(limit);
+      bookdata = await books.find(query).skip(startIndex).limit(limit);
       res.status(201).json({
         Values: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
@@ -88,7 +98,7 @@ exports.getBook = async (req, res) => {
       });
     } else if (UserID && Status === "-1") {
       bookdata = await books
-        .find({ UserID: UserID })
+        .find({ query, UserID: UserID })
         .skip(startIndex)
         .limit(limit);
       res.status(201).json({
@@ -98,7 +108,7 @@ exports.getBook = async (req, res) => {
       });
     } else if (Status && UserID === "-1") {
       bookdata = await books
-        .find({ Status: Status })
+        .find({ query, Status: Status })
         .skip(startIndex)
         .limit(limit);
       res.status(201).json({
@@ -108,7 +118,7 @@ exports.getBook = async (req, res) => {
       });
     } else if (UserID && Status) {
       bookdata = await books
-        .find({ UserID: UserID, Status: Status })
+        .find({ query, UserID: UserID, Status: Status })
         .skip(startIndex)
         .limit(limit);
       res.status(201).json({

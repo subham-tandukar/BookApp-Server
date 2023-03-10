@@ -103,8 +103,8 @@ exports.resendOtp = async (req, res) => {
              </head>
              <body>
                <h3 class="dark"><strong>Verify your email address</strong></h3>
+               <p class="dark">Hello ${Email},</p>
                <span class="dark">Thanks for signing up. We want to make sure it's really you. Please enter the following verification code given below. If you don't want to create an account, you can ignore this message.</span>
-               <br>
                <h3 class="text-center mb-0 mt-3 dark"><strong>Verification Code</strong></h3>
                <h1 class="verification-code text-center mt-5"><strong>${otp}</strong></h1>
              </body>
