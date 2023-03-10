@@ -5,6 +5,7 @@ const cloudinary = require("../cloudinary");
 // ---- add book ----
 exports.postBook = async (req, res) => {
   const {
+    BookID,
     BookName,
     Auther,
     AgeGroup,
@@ -54,6 +55,24 @@ exports.postBook = async (req, res) => {
       await bookData.save();
       res.status(201).json({
         Image: bookData.Image,
+        StatusCode: 200,
+        Message: "success",
+      });
+    } else if (FLAG === "U") {
+      await books.findByIdAndUpdate(BookID, req.body, {
+        new: true,
+      });
+      res.status(201).json({
+        StatusCode: 200,
+        Message: "success",
+      });
+    } else if (FLAG === "D") {
+      const deleteBook = await books.findByIdAndDelete({ _id: BookID });
+
+      // Delete the image from Cloudinary
+      await cloudinary.uploader.destroy(deleteBook.Image.public_id);
+
+      res.status(201).json({
         StatusCode: 200,
         Message: "success",
       });
