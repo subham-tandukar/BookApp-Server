@@ -21,6 +21,7 @@ exports.postBook = async (req, res) => {
     UserID,
     Image,
   } = req.body;
+
   try {
     if (FLAG === "I") {
       // const base64Data = Image.split(";base64,").pop();
@@ -50,7 +51,7 @@ exports.postBook = async (req, res) => {
           public_id: bookImg.public_id,
           url: bookImg.secure_url,
         },
-        UserID: UserID,
+        UserID,
       });
       await bookData.save();
       res.status(201).json({
@@ -59,7 +60,32 @@ exports.postBook = async (req, res) => {
         Message: "success",
       });
     } else if (FLAG === "U") {
-      await books.findByIdAndUpdate(BookID, req.body, {
+      const updateBook = await books.findById({ _id: BookID });
+      await cloudinary.uploader.destroy(updateBook.Image.public_id);
+
+      const bookImg = await cloudinary.uploader.upload(Image, {
+        folder: "books",
+      });
+
+      const update = {
+        BookName,
+        Auther,
+        AgeGroup,
+        Page,
+        WordCount,
+        Edition,
+        YearPublished,
+        Quantity,
+        Genre,
+        Status,
+        Description,
+        Image: {
+          public_id: bookImg.public_id,
+          url: bookImg.secure_url,
+        },
+        UserID,
+      };
+      await books.findByIdAndUpdate(BookID, update, {
         new: true,
       });
       res.status(201).json({
