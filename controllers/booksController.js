@@ -60,31 +60,62 @@ exports.postBook = async (req, res) => {
         Message: "success",
       });
     } else if (FLAG === "U") {
-      const updateBook = await books.findById({ _id: BookID });
-      await cloudinary.uploader.destroy(updateBook.Image.public_id);
+      let urlRegex =
+        /^(?:https?|ftp):\/\/[\w-]+(?:\.[\w-]+)+[\w.,@?^=%&amp;:/~+#-]*$/;
 
-      const bookImg = await cloudinary.uploader.upload(Image, {
-        folder: "books",
-      });
+      // Check if the URL matches the regex pattern
+      const changeImage = urlRegex.test(Image);
 
-      const update = {
-        BookName,
-        Auther,
-        AgeGroup,
-        Page,
-        WordCount,
-        Edition,
-        YearPublished,
-        Quantity,
-        Genre,
-        Status,
-        Description,
-        Image: {
-          public_id: bookImg.public_id,
-          url: bookImg.secure_url,
-        },
-        UserID,
-      };
+      let bookImg;
+
+      if (!changeImage) {
+        const updateBook = await books.findById({ _id: BookID });
+
+        await cloudinary.uploader.destroy(updateBook.Image.public_id);
+
+        bookImg = await cloudinary.uploader.upload(Image, {
+          folder: "books",
+        });
+      }
+
+      let update;
+
+      if (changeImage === false) {
+        update = {
+          BookName,
+          Auther,
+          AgeGroup,
+          Page,
+          WordCount,
+          Edition,
+          YearPublished,
+          Quantity,
+          Genre,
+          Status,
+          Description,
+          Image: {
+            public_id: bookImg.public_id,
+            url: bookImg.secure_url,
+          },
+          UserID,
+        };
+      } else {
+        update = {
+          BookName,
+          Auther,
+          AgeGroup,
+          Page,
+          WordCount,
+          Edition,
+          YearPublished,
+          Quantity,
+          Genre,
+          Status,
+          Description,
+          UserID,
+        };
+      }
+
       await books.findByIdAndUpdate(BookID, update, {
         new: true,
       });
@@ -118,44 +149,43 @@ exports.getBook = async (req, res) => {
   try {
     const UserID = req.query.UserID;
     const Status = req.query.Status;
-    const Search = req.query.Search;
+    // const Search = req.query.Search;
 
-    let query = {};
+    // let query = {};
 
-    if (Search) {
-      query.$or = [
-        { BookName: { $regex: Search, $options: "i" } }, // search by Title
-        { Auther: { $regex: Search, $options: "i" } }, // search by Author
-      ];
-    }
+    // if (Search) {
+    //   query.$or = [
+    //     { BookName: { $regex: Search, $options: "i" } },
+    //     { Auther: { $regex: Search, $options: "i" } },
+    //   ];
+    // }
 
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 6;
-    const startIndex = (page - 1) * limit;
+    // const page = parseInt(req.query.page) || 1;
+    // const limit = parseInt(req.query.limit) || 6;
+    // const startIndex = (page - 1) * limit;
 
     let bookdata;
     if (UserID === "-1" && Status === "-1") {
-      bookdata = await books.find(query).skip(startIndex).limit(limit);
+      // bookdata = await books.find(query).skip(startIndex).limit(limit);
+      bookdata = await books.find().sort({ createdAt: -1 });
       res.status(201).json({
         Values: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
         Message: "success",
       });
     } else if (UserID && Status === "-1") {
-      bookdata = await books
-        .find({ query, UserID: UserID })
-        .skip(startIndex)
-        .limit(limit);
+      bookdata = await books.find({ UserID: UserID }).sort({ createdAt: -1 });
+      // .skip(startIndex)
+      // .limit(limit);
       res.status(201).json({
         Values: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
         Message: "success",
       });
     } else if (Status && UserID === "-1") {
-      bookdata = await books
-        .find({ query, Status: Status })
-        .skip(startIndex)
-        .limit(limit);
+      bookdata = await books.find({ Status: Status }).sort({ createdAt: -1 });
+      // .skip(startIndex)
+      // .limit(limit);
       res.status(201).json({
         Values: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
@@ -163,9 +193,10 @@ exports.getBook = async (req, res) => {
       });
     } else if (UserID && Status) {
       bookdata = await books
-        .find({ query, UserID: UserID, Status: Status })
-        .skip(startIndex)
-        .limit(limit);
+        .find({ UserID: UserID, Status: Status })
+        .sort({ createdAt: -1 });
+      // .skip(startIndex)
+      // .limit(limit);
       res.status(201).json({
         Values: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
