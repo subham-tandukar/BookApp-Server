@@ -25,9 +25,9 @@ exports.otp = async (req, res) => {
     await User.findOneAndUpdate({ Email }, update, options);
 
     res.status(201).json({
-      Status: "Verified",
       StatusCode: 200,
       Message: "success",
+      Status: "Verified",
     });
   } catch (error) {
     res.status(401).json({
@@ -118,9 +118,9 @@ exports.resendOtp = async (req, res) => {
           });
         } else {
           res.status(201).json({
-            OTP: otp,
             StatusCode: 200,
             Message: "success",
+            OTP: otp,
           });
         }
       });

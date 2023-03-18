@@ -1,4 +1,5 @@
 const User = require("../models/userSchema");
+const appUser = require("../models/appUserSchema");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodeMailer = require("nodemailer");
@@ -10,6 +11,11 @@ exports.user = async (req, res) => {
   const { Name, Email, Password, FLAG, Profile } = req.body;
   try {
     if (FLAG === "I") {
+      if (!Name || !Email || !Password || !Profile) {
+        return res.status(422).json({
+          Message: "Please fill the required fields",
+        });
+      }
       let user = await User.findOne({ Email: Email });
 
       // if (user.Status === "Unverified") {
@@ -117,20 +123,20 @@ exports.user = async (req, res) => {
           });
         } else {
           res.status(201).json({
+            StatusCode: 200,
+            Message: "success",
             OTP: otp,
             authToken,
             Status: user.Status,
-            StatusCode: 200,
-            Message: "success",
           });
         }
       });
     } else if (FLAG === "S") {
       const userdata = await User.find();
       res.status(201).json({
-        Values: userdata.length <= 0 ? "No data" : userdata,
         StatusCode: 200,
         Message: "success",
+        Values: userdata.length <= 0 ? "No data" : userdata,
       });
     } else {
       res.status(400).json({ StatusCode: 400, Message: "Invalid flag" });
@@ -149,9 +155,102 @@ exports.getNewUser = async (req, res) => {
     const limit = 5;
     const userdata = await User.find().limit(limit).sort({ createdAt: -1 });
     res.status(201).json({
-      Values: userdata.length <= 0 ? "No data" : userdata,
       StatusCode: 200,
       Message: "success",
+      Values: userdata.length <= 0 ? "No data" : userdata,
+    });
+    console.log("userdata", userdata);
+  } catch (error) {
+    res.status(401).json({
+      StatusCode: 400,
+      Message: error,
+    });
+  }
+};
+
+// --- app user ---
+exports.appUser = async (req, res) => {
+  const { Name, Email, Password, FLAG, Profile } = req.body;
+  try {
+    if (FLAG === "I") {
+      if (!Name || !Email || !Password || !Profile) {
+        return res.status(422).json({
+          Message: "Please fill the required fields",
+        });
+      }
+      let user = await appUser.findOne({ Email: Email });
+
+      // if (user.Status === "Unverified") {
+      //   await User.findOneAndDelete({ Email });
+      // }
+      if (user) {
+        return res.status(422).json({
+          Message: "This email already exist",
+        });
+      }
+
+      if (!Profile) {
+        Profile =
+          "https://res.cloudinary.com/de3eu0mvq/image/upload/v1678434591/profile/taztcmb8jl9pxe1yqzd3.png";
+      }
+
+      const profileImg = await cloudinary.uploader.upload(Profile, {
+        folder: "appProfile",
+      });
+
+      const salt = await bcrypt.genSalt(10);
+      const secPass = await bcrypt.hash(Password, salt);
+
+      user = await appUser.create({
+        Profile: {
+          public_id: profileImg.public_id,
+          url: profileImg.secure_url,
+        },
+        Name: Name,
+        Email: Email,
+        Password: secPass,
+      });
+
+      const data = {
+        user: {
+          id: user.id,
+        },
+      };
+
+      const authToken = jwt.sign(data, JWT_SECRET);
+
+      res.status(201).json({
+        StatusCode: 200,
+        Message: "success",
+        authToken,
+      });
+    } else if (FLAG === "S") {
+      const userdata = await appUser.find();
+      res.status(201).json({
+        StatusCode: 200,
+        Message: "success",
+        Values: userdata.length <= 0 ? "No data" : userdata,
+      });
+    } else {
+      res.status(400).json({ StatusCode: 400, Message: "Invalid flag" });
+    }
+  } catch (error) {
+    res.status(401).json({
+      StatusCode: 400,
+      Message: error,
+    });
+  }
+};
+
+// --- get new app user ---
+exports.getNewAppUser = async (req, res) => {
+  try {
+    const limit = 5;
+    const userdata = await appUser.find().limit(limit).sort({ createdAt: -1 });
+    res.status(201).json({
+      StatusCode: 200,
+      Message: "success",
+      Values: userdata.length <= 0 ? "No data" : userdata,
     });
     console.log("userdata", userdata);
   } catch (error) {

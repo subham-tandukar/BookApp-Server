@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema(
+const appUserSchema = new mongoose.Schema(
   {
     Profile: {
       public_id: {
@@ -27,17 +27,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    Status: {
-      type: String,
-      default: "Unverified",
-    },
-    OTP: {
-      type: String,
-    },
   },
   { timestamps: true }
 );
 
-const users = new mongoose.model("user", userSchema);
+const appUsers = new mongoose.model("appUser", appUserSchema);
 
-module.exports = users;
+module.exports = appUsers;

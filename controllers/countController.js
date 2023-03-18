@@ -21,6 +21,8 @@ exports.count = async (req, res) => {
     const totalUsers = totalUserCt.length;
 
     res.status(201).json({
+      StatusCode: 200,
+      Message: "success",
       Values: [
         {
           TotalBooks: totalBooks,
@@ -29,8 +31,6 @@ exports.count = async (req, res) => {
           TotalUsers: totalUsers,
         },
       ],
-      StatusCode: 200,
-      Message: "success",
     });
   } catch (error) {
     res.status(401).json({

@@ -10,13 +10,16 @@ const cpControllers = require("../controllers/changePasswordController");
 
 // ==============================
 router.post("/api/user", userControllers.user);
+router.post("/api/appUser", userControllers.appUser);
 router.post("/api/otp", otpControllers.otp);
 router.post("/api/resendOtp", otpControllers.resendOtp);
 router.post("/api/login", loginControllers.login);
+router.post("/api/appLogin", loginControllers.appLogin);
 router.post("/api/book", bookControllers.postBook);
 router.get("/api/getBook", bookControllers.getBook);
 router.get("/api/count", countControllers.count);
 router.get("/api/getNewUser", userControllers.getNewUser);
+router.get("/api/getNewAppUser", userControllers.getNewAppUser);
 router.post("/api/change-password", cpControllers.changePassword);
 router.post("/api/forget-password", cpControllers.forgetPassword);
 // -------------------------------

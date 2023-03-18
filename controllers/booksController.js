@@ -55,9 +55,9 @@ exports.postBook = async (req, res) => {
       });
       await bookData.save();
       res.status(201).json({
-        Image: bookData.Image,
         StatusCode: 200,
         Message: "success",
+        Image: bookData.Image,
       });
     } else if (FLAG === "U") {
       let urlRegex =
@@ -123,6 +123,20 @@ exports.postBook = async (req, res) => {
         StatusCode: 200,
         Message: "success",
       });
+    } else if (FLAG === "SI") {
+      const showbook = await books.findById({ _id: BookID });
+      if (showbook) {
+        res.status(201).json({
+          StatusCode: 200,
+          Message: "success",
+          Values: [showbook],
+        });
+      } else {
+        res.status(401).json({
+          StatusCode: 400,
+          Message: "Book not found",
+        });
+      }
     } else if (FLAG === "D") {
       const deleteBook = await books.findByIdAndDelete({ _id: BookID });
 
@@ -169,27 +183,27 @@ exports.getBook = async (req, res) => {
       // bookdata = await books.find(query).skip(startIndex).limit(limit);
       bookdata = await books.find().sort({ createdAt: -1 });
       res.status(201).json({
-        Values: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
         Message: "success",
+        Values: bookdata.length <= 0 ? null : bookdata,
       });
     } else if (UserID && Status === "-1") {
       bookdata = await books.find({ UserID: UserID }).sort({ createdAt: -1 });
       // .skip(startIndex)
       // .limit(limit);
       res.status(201).json({
-        Values: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
         Message: "success",
+        Values: bookdata.length <= 0 ? null : bookdata,
       });
     } else if (Status && UserID === "-1") {
       bookdata = await books.find({ Status: Status }).sort({ createdAt: -1 });
       // .skip(startIndex)
       // .limit(limit);
       res.status(201).json({
-        Values: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
         Message: "success",
+        Values: bookdata.length <= 0 ? null : bookdata,
       });
     } else if (UserID && Status) {
       bookdata = await books
@@ -198,9 +212,9 @@ exports.getBook = async (req, res) => {
       // .skip(startIndex)
       // .limit(limit);
       res.status(201).json({
-        Values: bookdata.length <= 0 ? null : bookdata,
         StatusCode: 200,
         Message: "success",
+        Values: bookdata.length <= 0 ? null : bookdata,
       });
     } else {
     }
