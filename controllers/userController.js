@@ -132,7 +132,7 @@ exports.user = async (req, res) => {
         }
       });
     } else if (FLAG === "S") {
-      const userdata = await User.find();
+      const userdata = await User.find({ Status: "Verified" });
       res.status(201).json({
         StatusCode: 200,
         Message: "success",
@@ -153,7 +153,9 @@ exports.user = async (req, res) => {
 exports.getNewUser = async (req, res) => {
   try {
     const limit = 5;
-    const userdata = await User.find().limit(limit).sort({ createdAt: -1 });
+    const userdata = await User.find({ Status: "Verified" })
+      .limit(limit)
+      .sort({ createdAt: -1 });
     res.status(201).json({
       StatusCode: 200,
       Message: "success",
@@ -225,7 +227,7 @@ exports.appUser = async (req, res) => {
         authToken,
       });
     } else if (FLAG === "S") {
-      const userdata = await appUser.find();
+      const userdata = await appUser.find({ Status: "Verified" });
       res.status(201).json({
         StatusCode: 200,
         Message: "success",
@@ -246,7 +248,10 @@ exports.appUser = async (req, res) => {
 exports.getNewAppUser = async (req, res) => {
   try {
     const limit = 5;
-    const userdata = await appUser.find().limit(limit).sort({ createdAt: -1 });
+    const userdata = await appUser
+      .find({ Status: "Verified" })
+      .limit(limit)
+      .sort({ createdAt: -1 });
     res.status(201).json({
       StatusCode: 200,
       Message: "success",
