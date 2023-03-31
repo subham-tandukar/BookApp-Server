@@ -7,6 +7,7 @@ const userControllers = require("../controllers/userController");
 const otpControllers = require("../controllers/otpController");
 const loginControllers = require("../controllers/loginController");
 const cpControllers = require("../controllers/changePasswordController");
+const genreControllers = require("../controllers/genreController");
 
 // ==============================
 router.post("/api/user", userControllers.user);
@@ -22,6 +23,7 @@ router.get("/api/getNewUser", userControllers.getNewUser);
 router.get("/api/getNewAppUser", userControllers.getNewAppUser);
 router.post("/api/change-password", cpControllers.changePassword);
 router.post("/api/forget-password", cpControllers.forgetPassword);
+router.post("/api/genre", genreControllers.genre);
 // -------------------------------
 
 module.exports = router;

@@ -24,19 +24,18 @@ const bookSchema = new mongoose.Schema(
     Page: {
       type: Number,
     },
-    WordCount: {
-      type: Number,
-    },
-    Edition: {
-      type: Number,
-    },
-    YearPublished: {
-      type: Number,
-    },
     Quantity: {
       type: Number,
     },
-    Genre: {
+    Rating: {
+      type: Number,
+      min: 0,
+      max: 5,
+      default: 0,
+    },
+   
+    Genre: [{ title: String }],
+    Language: {
       type: String,
     },
     Status: {

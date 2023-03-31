@@ -10,10 +10,9 @@ exports.postBook = async (req, res) => {
     Auther,
     AgeGroup,
     Page,
-    WordCount,
-    Edition,
-    YearPublished,
     Quantity,
+    Language,
+    Rating,
     Genre,
     Status,
     Description,
@@ -40,12 +39,11 @@ exports.postBook = async (req, res) => {
         Auther,
         AgeGroup,
         Page,
-        WordCount,
-        Edition,
-        YearPublished,
         Quantity,
         Genre,
         Status,
+        Language,
+        Rating,
         Description,
         Image: {
           public_id: bookImg.public_id,
@@ -86,10 +84,9 @@ exports.postBook = async (req, res) => {
           Auther,
           AgeGroup,
           Page,
-          WordCount,
-          Edition,
-          YearPublished,
           Quantity,
+          Language,
+          Rating,
           Genre,
           Status,
           Description,
@@ -105,10 +102,9 @@ exports.postBook = async (req, res) => {
           Auther,
           AgeGroup,
           Page,
-          WordCount,
-          Edition,
-          YearPublished,
           Quantity,
+          Language,
+          Rating,
           Genre,
           Status,
           Description,
@@ -161,8 +157,8 @@ exports.postBook = async (req, res) => {
 // --- get book ---
 exports.getBook = async (req, res) => {
   try {
-    const UserID = req.query.UserID;
-    const Status = req.query.Status;
+    // const UserID = req.query.UserID;
+    // const Status = req.query.Status;
     // const Search = req.query.Search;
 
     // let query = {};
@@ -178,46 +174,59 @@ exports.getBook = async (req, res) => {
     // const limit = parseInt(req.query.limit) || 6;
     // const startIndex = (page - 1) * limit;
 
+    const UserID = req.query.UserID;
+    const Status = req.query.Status;
+    const Genres = req.query.Genres
+      ? Array.isArray(req.query.Genres)
+        ? req.query.Genres
+        : [req.query.Genres]
+      : [];
+
     let bookdata;
-    if (UserID === "-1" && Status === "-1") {
-      // bookdata = await books.find(query).skip(startIndex).limit(limit);
+    if (UserID === "-1" && Status === "-1" && Genres.length === 0) {
       bookdata = await books.find().sort({ createdAt: -1 });
-      res.status(201).json({
-        StatusCode: 200,
-        Message: "success",
-        Values: bookdata.length <= 0 ? null : bookdata,
-      });
-    } else if (UserID && Status === "-1") {
+    } else if (UserID && Status === "-1" && Genres.length === 0) {
       bookdata = await books.find({ UserID: UserID }).sort({ createdAt: -1 });
-      // .skip(startIndex)
-      // .limit(limit);
-      res.status(201).json({
-        StatusCode: 200,
-        Message: "success",
-        Values: bookdata.length <= 0 ? null : bookdata,
-      });
-    } else if (Status && UserID === "-1") {
+    } else if (Status && UserID === "-1" && Genres.length === 0) {
       bookdata = await books.find({ Status: Status }).sort({ createdAt: -1 });
-      // .skip(startIndex)
-      // .limit(limit);
-      res.status(201).json({
-        StatusCode: 200,
-        Message: "success",
-        Values: bookdata.length <= 0 ? null : bookdata,
-      });
-    } else if (UserID && Status) {
+    } else if (UserID === "-1" && Status === "-1" && Genres.length !== 0) {
+      bookdata = await books
+        .find({ Genre: { $elemMatch: { title: { $in: Genres } } } })
+        .sort({ createdAt: -1 });
+    } else if (UserID === "-1" && Status && Genres.length !== 0) {
+      bookdata = await books
+        .find({
+          Genre: { $elemMatch: { title: { $in: Genres } } },
+          Status: Status,
+        })
+        .sort({ createdAt: -1 });
+    } else if (UserID && Status === "-1" && Genres.length !== 0) {
+      bookdata = await books
+        .find({
+          Genre: { $elemMatch: { title: { $in: Genres } } },
+          UserID: UserID,
+        })
+        .sort({ createdAt: -1 });
+    } else if (UserID && Status && Genres.length === 0) {
       bookdata = await books
         .find({ UserID: UserID, Status: Status })
         .sort({ createdAt: -1 });
-      // .skip(startIndex)
-      // .limit(limit);
-      res.status(201).json({
-        StatusCode: 200,
-        Message: "success",
-        Values: bookdata.length <= 0 ? null : bookdata,
-      });
+    } else if (UserID && Status && Genres.length !== 0) {
+      bookdata = await books
+        .find({
+          Genre: { $elemMatch: { title: { $in: Genres } } },
+          UserID: UserID,
+          Status: Status,
+        })
+        .sort({ createdAt: -1 });
     } else {
+      // Handle other cases if needed
     }
+    res.status(201).json({
+      StatusCode: 200,
+      Message: "success",
+      Values: bookdata.length <= 0 ? null : bookdata,
+    });
   } catch (error) {
     res.status(401).json({
       StatusCode: 400,
