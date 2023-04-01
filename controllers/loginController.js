@@ -26,6 +26,8 @@ exports.login = async (req, res) => {
     const data = {
       user: {
         id: user.id,
+        name: user.Name,
+        email: user.Email,
       },
     };
     const authToken = jwt.sign(data, JWT_SECRET);
@@ -79,6 +81,8 @@ exports.appLogin = async (req, res) => {
     const data = {
       user: {
         id: user.id,
+        name: user.Name,
+        email: user.Email,
       },
     };
     const authToken = jwt.sign(data, JWT_SECRET);

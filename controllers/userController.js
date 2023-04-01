@@ -59,6 +59,8 @@ exports.user = async (req, res) => {
       const data = {
         user: {
           id: user.id,
+          name: user.Name,
+          email: user.Email,
         },
       };
 
@@ -216,6 +218,8 @@ exports.appUser = async (req, res) => {
       const data = {
         user: {
           id: user.id,
+          name: user.Name,
+          email: user.Email,
         },
       };
 
