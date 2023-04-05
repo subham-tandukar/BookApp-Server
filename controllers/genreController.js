@@ -35,6 +35,11 @@ exports.genre = async (req, res) => {
         image: genreData.image,
       });
     } else if (FLAG === "U") {
+      if (!title || !image) {
+        return res.status(422).json({
+          Message: "Please fill the required fields",
+        });
+      }
       let urlRegex =
         /^(?:https?|ftp):\/\/[\w-]+(?:\.[\w-]+)+[\w.,@?^=%&amp;:/~+#-]*$/;
 

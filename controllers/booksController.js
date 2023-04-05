@@ -30,6 +30,23 @@ exports.postBook = async (req, res) => {
 
       // await fs.promises.writeFile(`uploads/${imageName}`, buffer);
 
+      if (!BookName || !Image || !Auther || !Status) {
+        return res.status(422).json({
+          Message: "Please fill the required fields",
+        });
+      }
+
+      if (Rating > 5) {
+        return res.status(422).json({
+          Message: "Rating value must be less than 5",
+        });
+      }
+      if (Rating < 0) {
+        return res.status(422).json({
+          Message: "Rating value must be more than 0",
+        });
+      }
+
       const bookImg = await cloudinary.uploader.upload(Image, {
         folder: "books",
       });
@@ -58,11 +75,27 @@ exports.postBook = async (req, res) => {
         Image: bookData.Image,
       });
     } else if (FLAG === "U") {
+      if (!BookName || !Image || !Auther || !Status) {
+        return res.status(422).json({
+          Message: "Please fill the required fields",
+        });
+      }
       let urlRegex =
         /^(?:https?|ftp):\/\/[\w-]+(?:\.[\w-]+)+[\w.,@?^=%&amp;:/~+#-]*$/;
 
       // Check if the URL matches the regex pattern
       const changeImage = urlRegex.test(Image);
+
+      if (Rating > 5) {
+        return res.status(422).json({
+          Message: "Rating value must be less than 5",
+        });
+      }
+      if (Rating < 0) {
+        return res.status(422).json({
+          Message: "Rating value must be more than 0",
+        });
+      }
 
       let bookImg;
 
@@ -191,19 +224,30 @@ exports.getBook = async (req, res) => {
       bookdata = await books.find({ Status: Status }).sort({ createdAt: -1 });
     } else if (UserID === "-1" && Status === "-1" && Genres.length !== 0) {
       bookdata = await books
-        .find({ Genre: { $elemMatch: { title: { $in: Genres } } } })
+        .find({
+          Genre: {
+            $elemMatch: { title: { $in: Genres } },
+            $elemMatch: { image: { $in: Genres } },
+          },
+        })
         .sort({ createdAt: -1 });
     } else if (UserID === "-1" && Status && Genres.length !== 0) {
       bookdata = await books
         .find({
-          Genre: { $elemMatch: { title: { $in: Genres } } },
+          Genre: {
+            $elemMatch: { title: { $in: Genres } },
+            $elemMatch: { image: { $in: Genres } },
+          },
           Status: Status,
         })
         .sort({ createdAt: -1 });
     } else if (UserID && Status === "-1" && Genres.length !== 0) {
       bookdata = await books
         .find({
-          Genre: { $elemMatch: { title: { $in: Genres } } },
+          Genre: {
+            $elemMatch: { title: { $in: Genres } },
+            $elemMatch: { image: { $in: Genres } },
+          },
           UserID: UserID,
         })
         .sort({ createdAt: -1 });
@@ -214,7 +258,10 @@ exports.getBook = async (req, res) => {
     } else if (UserID && Status && Genres.length !== 0) {
       bookdata = await books
         .find({
-          Genre: { $elemMatch: { title: { $in: Genres } } },
+          Genre: {
+            $elemMatch: { title: { $in: Genres } },
+            $elemMatch: { image: { $in: Genres } },
+          },
           UserID: UserID,
           Status: Status,
         })
