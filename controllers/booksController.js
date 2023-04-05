@@ -224,30 +224,19 @@ exports.getBook = async (req, res) => {
       bookdata = await books.find({ Status: Status }).sort({ createdAt: -1 });
     } else if (UserID === "-1" && Status === "-1" && Genres.length !== 0) {
       bookdata = await books
-        .find({
-          Genre: {
-            $elemMatch: { title: { $in: Genres } },
-            $elemMatch: { image: { $in: Genres } },
-          },
-        })
+        .find({ Genre: { $elemMatch: { title: { $in: Genres } } } })
         .sort({ createdAt: -1 });
     } else if (UserID === "-1" && Status && Genres.length !== 0) {
       bookdata = await books
         .find({
-          Genre: {
-            $elemMatch: { title: { $in: Genres } },
-            $elemMatch: { image: { $in: Genres } },
-          },
+          Genre: { $elemMatch: { title: { $in: Genres } } },
           Status: Status,
         })
         .sort({ createdAt: -1 });
     } else if (UserID && Status === "-1" && Genres.length !== 0) {
       bookdata = await books
         .find({
-          Genre: {
-            $elemMatch: { title: { $in: Genres } },
-            $elemMatch: { image: { $in: Genres } },
-          },
+          Genre: { $elemMatch: { title: { $in: Genres } } },
           UserID: UserID,
         })
         .sort({ createdAt: -1 });
@@ -258,10 +247,7 @@ exports.getBook = async (req, res) => {
     } else if (UserID && Status && Genres.length !== 0) {
       bookdata = await books
         .find({
-          Genre: {
-            $elemMatch: { title: { $in: Genres } },
-            $elemMatch: { image: { $in: Genres } },
-          },
+          Genre: { $elemMatch: { title: { $in: Genres } } },
           UserID: UserID,
           Status: Status,
         })
