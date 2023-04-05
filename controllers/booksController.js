@@ -253,7 +253,6 @@ exports.getBook = async (req, res) => {
         })
         .sort({ createdAt: -1 });
     } else {
-      // Handle other cases if needed
     }
     res.status(201).json({
       StatusCode: 200,
