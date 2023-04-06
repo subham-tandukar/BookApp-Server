@@ -216,11 +216,11 @@ exports.getBook = async (req, res) => {
       : [];
 
     let bookdata;
-    if (UserID === "-1" && Status === "-1" && Genres.length === 0) {
+    if (UserID === "-1" && Status === "-1" && Genres[0] === "-1") {
       bookdata = await books.find().sort({ createdAt: -1 });
-    } else if (UserID && Status === "-1" && Genres.length === 0) {
+    } else if (UserID && Status === "-1" && Genres[0] === "-1") {
       bookdata = await books.find({ UserID: UserID }).sort({ createdAt: -1 });
-    } else if (Status && UserID === "-1" && Genres.length === 0) {
+    } else if (Status && UserID === "-1" && Genres[0] === "-1") {
       bookdata = await books.find({ Status: Status }).sort({ createdAt: -1 });
     } else if (UserID === "-1" && Status === "-1" && Genres.length !== 0) {
       bookdata = await books
@@ -240,7 +240,7 @@ exports.getBook = async (req, res) => {
           UserID: UserID,
         })
         .sort({ createdAt: -1 });
-    } else if (UserID && Status && Genres.length === 0) {
+    } else if (UserID && Status && Genres[0] === "-1") {
       bookdata = await books
         .find({ UserID: UserID, Status: Status })
         .sort({ createdAt: -1 });
