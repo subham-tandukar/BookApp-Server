@@ -253,7 +253,7 @@ exports.getUser = async (req, res) => {
   try {
     const limit = 5;
     const userdata = await appUser
-      .find({ Status: "Verified" })
+      .find()
       .limit(limit)
       .sort({ createdAt: -1 });
     res.status(201).json({
