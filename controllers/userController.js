@@ -174,7 +174,7 @@ exports.getNewUser = async (req, res) => {
 
 // --- app user ---
 exports.appUser = async (req, res) => {
-  const { Name, Email, Password, FLAG, Profile } = req.body;
+  const { Name, Email, Password, FLAG, Profile, UserID } = req.body;
   try {
     if (FLAG === "I") {
       if (!Name || !Email || !Password || !Profile) {
@@ -231,11 +231,68 @@ exports.appUser = async (req, res) => {
         authToken,
       });
     } else if (FLAG === "S") {
-      const userdata = await appUser.find({ Status: "Verified" });
+      const userdata = await appUser.find();
       res.status(201).json({
         StatusCode: 200,
         Message: "success",
         Values: userdata.length <= 0 ? "No data" : userdata,
+      });
+    } else if (FLAG === "U") {
+      if (!Name || !Profile) {
+        return res.status(422).json({
+          Message: "Please fill the required fields",
+        });
+      }
+      let urlRegex =
+        /^(?:https?|ftp):\/\/[\w-]+(?:\.[\w-]+)+[\w.,@?^=%&amp;:/~+#-]*$/;
+
+      // Check if the URL matches the regex pattern
+      const changeImage = urlRegex.test(Profile);
+
+      let userImage;
+
+      if (!changeImage) {
+        const updateUser = await appUser.findById({ _id: UserID });
+
+        await cloudinary.uploader.destroy(updateUser.Profile.public_id);
+
+        userImage = await cloudinary.uploader.upload(Profile, {
+          folder: "appProfile",
+        });
+      }
+
+      let update;
+
+      if (changeImage === false) {
+        update = {
+          Name,
+          Profile: {
+            public_id: userImage.public_id,
+            url: userImage.secure_url,
+          },
+        };
+      } else {
+        update = {
+          Name,
+        };
+      }
+
+      await appUser.findByIdAndUpdate(UserID, update, {
+        new: true,
+      });
+      res.status(201).json({
+        StatusCode: 200,
+        Message: "success",
+      });
+    } else if (FLAG === "D") {
+      const deleteUser = await appUser.findByIdAndDelete({ _id: UserID });
+
+      // Delete the image from Cloudinary
+      await cloudinary.uploader.destroy(deleteUser.Profile.public_id);
+
+      res.status(201).json({
+        StatusCode: 200,
+        Message: "success",
       });
     } else {
       res.status(400).json({ StatusCode: 400, Message: "Invalid flag" });
@@ -252,16 +309,12 @@ exports.appUser = async (req, res) => {
 exports.getUser = async (req, res) => {
   try {
     const limit = 5;
-    const userdata = await appUser
-      .find()
-      .limit(limit)
-      .sort({ createdAt: -1 });
+    const userdata = await appUser.find().limit(limit).sort({ createdAt: -1 });
     res.status(201).json({
       StatusCode: 200,
       Message: "success",
       Values: userdata.length <= 0 ? "No data" : userdata,
     });
-    console.log("userdata", userdata);
   } catch (error) {
     res.status(401).json({
       StatusCode: 400,
