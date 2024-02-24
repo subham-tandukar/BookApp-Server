@@ -333,12 +333,12 @@ exports.getUser = async (req, res) => {
     res.status(201).json({
       StatusCode: 200,
       Message: "success",
-      Values: userdata.length <= 0 ? "No data" : userdata,
       Pagination: {
         page,
         pageSize,
         total: await appUser.countDocuments(), // Total number of documents in the collection
       },
+      Values: userdata.length <= 0 ? "No data" : userdata,
     });
   } catch (error) {
     res.status(401).json({
