@@ -322,15 +322,23 @@ exports.appUser = async (req, res) => {
 // --- get new app user ---
 exports.getUser = async (req, res) => {
   try {
-    // const limit = 5;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10; // default page size is 10
+    const skip = (page - 1) * pageSize;
     const userdata = await appUser
       .find()
-      .limit(req.limit)
+      .skip(skip)
+      .limit(pageSize)
       .sort({ createdAt: -1 });
     res.status(201).json({
       StatusCode: 200,
       Message: "success",
       Values: userdata.length <= 0 ? "No data" : userdata,
+      Pagination: {
+        page,
+        pageSize,
+        total: await appUser.countDocuments(), // Total number of documents in the collection
+      },
     });
   } catch (error) {
     res.status(401).json({
