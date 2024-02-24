@@ -249,7 +249,7 @@ exports.appUser = async (req, res) => {
 };
 
 // --- get new app user ---
-exports.getNewAppUser = async (req, res) => {
+exports.getUser = async (req, res) => {
   try {
     const limit = 5;
     const userdata = await appUser

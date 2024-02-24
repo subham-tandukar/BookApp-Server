@@ -20,7 +20,7 @@ router.post("/api/book", bookControllers.postBook);
 router.get("/api/getBook", bookControllers.getBook);
 router.get("/api/count", countControllers.count);
 router.get("/api/getNewUser", userControllers.getNewUser);
-router.get("/api/getNewAppUser", userControllers.getNewAppUser);
+router.get("/api/getUser", userControllers.getUser);
 router.post("/api/change-password", cpControllers.changePassword);
 router.post("/api/forget-password", cpControllers.forgetPassword);
 router.post("/api/genre", genreControllers.genre);
