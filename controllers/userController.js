@@ -237,6 +237,20 @@ exports.appUser = async (req, res) => {
         Message: "success",
         Values: userdata.length <= 0 ? "No data" : userdata,
       });
+    } else if (FLAG === "SI") {
+      const showuser = await appUser.findById({ _id: UserID });
+      if (showuser) {
+        res.status(201).json({
+          StatusCode: 200,
+          Message: "success",
+          Values: [showuser],
+        });
+      } else {
+        res.status(401).json({
+          StatusCode: 400,
+          Message: "User not found",
+        });
+      }
     } else if (FLAG === "U") {
       if (!Name || !Profile) {
         return res.status(422).json({
@@ -308,8 +322,11 @@ exports.appUser = async (req, res) => {
 // --- get new app user ---
 exports.getUser = async (req, res) => {
   try {
-    const limit = 5;
-    const userdata = await appUser.find().limit(limit).sort({ createdAt: -1 });
+    // const limit = 5;
+    const userdata = await appUser
+      .find()
+      .limit(req.limit)
+      .sort({ createdAt: -1 });
     res.status(201).json({
       StatusCode: 200,
       Message: "success",
