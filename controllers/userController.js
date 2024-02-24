@@ -237,7 +237,7 @@ exports.appUser = async (req, res) => {
         Message: "success",
         Values: userdata.length <= 0 ? "No data" : userdata,
       });
-    } else if (FLAG === "SI") {
+    } else if (FLAG === "V") {
       const showuser = await appUser.findById({ _id: UserID });
       if (showuser) {
         res.status(201).json({
