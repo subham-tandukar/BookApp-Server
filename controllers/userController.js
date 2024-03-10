@@ -8,7 +8,7 @@ const cloudinary = require("../cloudinary");
 
 // --- user ---
 exports.user = async (req, res) => {
-  const { Name, Email, Password, FLAG, Profile } = req.body;
+  const { Name, Email, Password, FLAG, Profile, IsVerified } = req.body;
   try {
     if (FLAG === "I") {
       if (!Name || !Email || !Password || !Profile) {
@@ -117,28 +117,36 @@ exports.user = async (req, res) => {
            </body>
          </html>`,
       };
-      await transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          res.status(401).json({
-            StatusCode: 400,
-            Message: "Email not send",
-          });
-        } else {
-          res.status(201).json({
-            StatusCode: 200,
-            Message: "success",
-            OTP: otp,
-            authToken,
-            Status: user.Status,
-          });
-        }
-      });
+
+      try {
+        await transporter.sendMail(mailOptions);
+        res.status(201).json({
+          StatusCode: 200,
+          Message: "success",
+          OTP: otp,
+          authToken,
+          Status: user.Status,
+        });
+      } catch (error) {
+        console.error("Error sending email:", error);
+        res.status(401).json({
+          StatusCode: 400,
+          Message: "Error sending email",
+        });
+      }
     } else if (FLAG === "S") {
-      const userdata = await User.find({ Status: "Verified" });
+      let userdata;
+      if (IsVerified === "-1") {
+        userdata = await User.find();
+      } else if (IsVerified === "Y") {
+        userdata = await User.find({ Status: "Verified" });
+      } else if (IsVerified === "N") {
+        userdata = await User.find({ Status: "Unverified" });
+      }
       res.status(201).json({
         StatusCode: 200,
         Message: "success",
-        Values: userdata.length <= 0 ? "No data" : userdata,
+        Values: userdata.length <= 0 ? null : userdata,
       });
     } else {
       res.status(400).json({ StatusCode: 400, Message: "Invalid flag" });
@@ -161,9 +169,69 @@ exports.getNewUser = async (req, res) => {
     res.status(201).json({
       StatusCode: 200,
       Message: "success",
-      Values: userdata.length <= 0 ? "No data" : userdata,
+      Values: userdata.length <= 0 ? null : userdata,
     });
     console.log("userdata", userdata);
+  } catch (error) {
+    res.status(401).json({
+      StatusCode: 400,
+      Message: error,
+    });
+  }
+};
+
+// get user
+exports.getUser = async (req, res) => {
+  try {
+    const isVerified = req.query.isVerified;
+    const sortby = req.query.sortby;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10; // default page size is 10
+    const skip = (page - 1) * pageSize;
+
+    const searchQuery = req.query.search || ""; // Extract the search query parameter from the request, default to an empty string if not provided
+
+    // Constructing the query to search for users by name and apply pagination
+    const query = {
+      Name: { $regex: searchQuery, $options: "i" }, // Case-insensitive regex search for the provided name
+    };
+
+    let sortQuery = { createdAt: -1 }; // Default sorting by createdAt date
+
+    if (sortby === "name") {
+      sortQuery = { Name: 1 }; // Sorting by name in ascending order
+    } else if (sortby === "login") {
+      sortQuery = { LastLoggedIn: -1 }; // Sorting by lastLoggedIn date in descending order (recently logged-in users first)
+      query.LastLoggedIn = { $exists: true }; // Filter out users where lastLoggedIn exists
+    }
+
+    // Adding verification status filtering to the query
+    if (isVerified === "-1") {
+      // No filter by verification status
+    } else if (isVerified === "Y") {
+      query.Status = "Verified";
+    } else if (isVerified === "N") {
+      query.Status = "Unverified";
+    }
+    // Retrieve users based on the constructed query
+    const userdata = await User.find(query)
+      .skip(skip)
+      .limit(pageSize)
+      .sort(sortQuery);
+
+    // Count documents based on the same query to get accurate total count
+    const totalDocuments = await User.countDocuments(query);
+
+    res.status(201).json({
+      StatusCode: 200,
+      Message: "success",
+      Pagination: {
+        page,
+        pageSize,
+        total: totalDocuments, // Total number of documents in the collection
+      },
+      Values: userdata.length <= 0 ? null : userdata,
+    });
   } catch (error) {
     res.status(401).json({
       StatusCode: 400,
@@ -235,7 +303,7 @@ exports.appUser = async (req, res) => {
       res.status(201).json({
         StatusCode: 200,
         Message: "success",
-        Values: userdata.length <= 0 ? "No data" : userdata,
+        Values: userdata.length <= 0 ? null : userdata,
       });
     } else if (FLAG === "V") {
       const showuser = await appUser.findById({ _id: UserID });
@@ -319,8 +387,8 @@ exports.appUser = async (req, res) => {
   }
 };
 
-// --- get new app user ---
-exports.getUser = async (req, res) => {
+// --- get app user ---
+exports.getAppUser = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const pageSize = parseInt(req.query.pageSize) || 10; // default page size is 10
@@ -338,7 +406,7 @@ exports.getUser = async (req, res) => {
         pageSize,
         total: await appUser.countDocuments(), // Total number of documents in the collection
       },
-      Values: userdata.length <= 0 ? "No data" : userdata,
+      Values: userdata.length <= 0 ? null : userdata,
     });
   } catch (error) {
     res.status(401).json({

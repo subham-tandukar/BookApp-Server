@@ -21,6 +21,7 @@ router.get("/api/getBook", bookControllers.getBook);
 router.get("/api/count", countControllers.count);
 router.get("/api/getNewUser", userControllers.getNewUser);
 router.get("/api/getUser", userControllers.getUser);
+router.get("/api/getAppUser", userControllers.getAppUser);
 router.post("/api/change-password", cpControllers.changePassword);
 router.post("/api/forget-password", cpControllers.forgetPassword);
 router.post("/api/genre", genreControllers.genre);

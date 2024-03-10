@@ -34,6 +34,9 @@ const userSchema = new mongoose.Schema(
     OTP: {
       type: String,
     },
+    LastLoggedIn: {
+      type: Date, // Field to store the last logged in date
+    },
   },
   { timestamps: true }
 );
