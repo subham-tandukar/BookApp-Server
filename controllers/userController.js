@@ -8,7 +8,7 @@ const cloudinary = require("../cloudinary");
 
 // --- user ---
 exports.user = async (req, res) => {
-  const { Name, Email, Password, FLAG, Profile, IsVerified } = req.body;
+  const { Name, Email, Password, FLAG, Profile, IsVerified, UserID } = req.body;
   try {
     if (FLAG === "I") {
       if (!Name || !Email || !Password || !Profile) {
@@ -147,6 +147,16 @@ exports.user = async (req, res) => {
         StatusCode: 200,
         Message: "success",
         Values: userdata.length <= 0 ? null : userdata,
+      });
+    } else if (FLAG === "D") {
+      const deleteUser = await User.findByIdAndDelete({ _id: UserID });
+
+      // Delete the image from Cloudinary
+      await cloudinary.uploader.destroy(deleteUser.Profile.public_id);
+
+      res.status(201).json({
+        StatusCode: 200,
+        Message: "success",
       });
     } else {
       res.status(400).json({ StatusCode: 400, Message: "Invalid flag" });
