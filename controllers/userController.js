@@ -193,6 +193,7 @@ exports.getNewUser = async (req, res) => {
 // get user
 exports.getUser = async (req, res) => {
   try {
+    const last = req.query.last;
     const isVerified = req.query.isVerified;
     const sortby = req.query.sortby;
     const page = parseInt(req.query.page) || 1;
@@ -210,9 +211,19 @@ exports.getUser = async (req, res) => {
 
     if (sortby === "name") {
       sortQuery = { Name: 1 }; // Sorting by name in ascending order
+      // query.collation = { locale: "en", caseLevel: false };
     } else if (sortby === "login") {
       sortQuery = { LastLoggedIn: -1 }; // Sorting by lastLoggedIn date in descending order (recently logged-in users first)
       query.LastLoggedIn = { $exists: true }; // Filter out users where lastLoggedIn exists
+    }
+    // Check if the 'last' parameter is true and reverse the sorting order if necessary
+    if (last === "true" && sortQuery) {
+      for (let key in sortQuery) {
+        sortQuery[key] *= -1; // Reverse the sorting order
+      }
+    } else if (last === "true") {
+      // If sortQuery is not set, it means no valid sortby parameter was provided, so default to sorting by createdAt
+      sortQuery = { createdAt: -1 }; // Sorting by createdAt date in descending order (recently created users first)
     }
 
     // Adding verification status filtering to the query
@@ -225,6 +236,7 @@ exports.getUser = async (req, res) => {
     }
     // Retrieve users based on the constructed query
     const userdata = await User.find(query)
+      .collation({ locale: "en", caseLevel: false })
       .skip(skip)
       .limit(pageSize)
       .sort(sortQuery);
