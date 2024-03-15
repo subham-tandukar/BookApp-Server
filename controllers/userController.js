@@ -8,7 +8,16 @@ const cloudinary = require("../cloudinary");
 
 // --- user ---
 exports.user = async (req, res) => {
-  const { Name, Email, Password, FLAG, Profile, IsVerified, UserID } = req.body;
+  const {
+    Name,
+    Email,
+    Password,
+    FLAG,
+    Profile,
+    IsVerified,
+    UserID,
+    BulkUserID,
+  } = req.body;
   try {
     if (FLAG === "I") {
       if (!Name || !Email || !Password || !Profile) {
@@ -122,16 +131,17 @@ exports.user = async (req, res) => {
         await transporter.sendMail(mailOptions);
         res.status(201).json({
           StatusCode: 200,
-          Message: "success",
+          Message: "Success",
           OTP: otp,
           authToken,
           Status: user.Status,
         });
       } catch (error) {
         console.error("Error sending email:", error);
-        res.status(401).json({
-          StatusCode: 400,
+        res.status(500).json({
+          StatusCode: 500,
           Message: "Error sending email",
+          Error: error.message,
         });
       }
     } else if (FLAG === "S") {
@@ -143,28 +153,84 @@ exports.user = async (req, res) => {
       } else if (IsVerified === "N") {
         userdata = await User.find({ Status: "Unverified" });
       }
-      res.status(201).json({
-        StatusCode: 200,
-        Message: "success",
-        Values: userdata.length <= 0 ? null : userdata,
-      });
+      try {
+        res.status(200).json({
+          StatusCode: 200,
+          Message: "Success",
+          Values: userdata.length <= 0 ? null : userdata,
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "Error fetching users",
+          Error: error.message,
+        });
+      }
     } else if (FLAG === "D") {
       const deleteUser = await User.findByIdAndDelete({ _id: UserID });
+
+      if (!deleteUser) {
+        return res.status(404).json({
+          StatusCode: 404,
+          Message: "User not found",
+        });
+      }
 
       // Delete the image from Cloudinary
       await cloudinary.uploader.destroy(deleteUser.Profile.public_id);
 
-      res.status(201).json({
-        StatusCode: 200,
-        Message: "success",
+      try {
+        res.status(200).json({
+          StatusCode: 200,
+          Message: "Success",
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "Error deleting user",
+          Error: error.message,
+        });
+      }
+    } else if (FLAG === "BD") {
+      // Perform bulk delete operation in MongoDB
+      const deleteResults = await User.deleteMany({
+        _id: { $in: BulkUserID },
       });
+
+      // Loop through the deleted user IDs and delete their images from Cloudinary
+      const deleteImagePromises = BulkUserID.map(async (userId) => {
+        const user = await User.findById(userId);
+        if (user && user.Profile && user.Profile.public_id) {
+          // Delete image from Cloudinary
+          await cloudinary.uploader.destroy(user.Profile.public_id);
+        }
+      });
+      await Promise.all(deleteImagePromises);
+
+      try {
+        res.status(200).json({
+          StatusCode: 200,
+          Message: "Success",
+          DeletedCount: deleteResults.deletedCount,
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "An error occurred while performing bulk delete",
+          Error: error.message,
+        });
+      }
     } else {
-      res.status(400).json({ StatusCode: 400, Message: "Invalid flag" });
+      res.status(400).json({
+        StatusCode: 400,
+        Message: "Invalid flag",
+      });
     }
   } catch (error) {
-    res.status(401).json({
-      StatusCode: 400,
-      Message: error,
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
     });
   }
 };
@@ -176,16 +242,16 @@ exports.getNewUser = async (req, res) => {
     const userdata = await User.find({ Status: "Verified" })
       .limit(limit)
       .sort({ createdAt: -1 });
-    res.status(201).json({
+    res.status(200).json({
       StatusCode: 200,
       Message: "success",
       Values: userdata.length <= 0 ? null : userdata,
     });
-    console.log("userdata", userdata);
   } catch (error) {
-    res.status(401).json({
-      StatusCode: 400,
-      Message: error,
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
     });
   }
 };
@@ -244,7 +310,7 @@ exports.getUser = async (req, res) => {
     // Count documents based on the same query to get accurate total count
     const totalDocuments = await User.countDocuments(query);
 
-    res.status(201).json({
+    res.status(200).json({
       StatusCode: 200,
       Message: "success",
       Pagination: {
@@ -255,16 +321,17 @@ exports.getUser = async (req, res) => {
       Values: userdata.length <= 0 ? null : userdata,
     });
   } catch (error) {
-    res.status(401).json({
-      StatusCode: 400,
-      Message: error,
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
     });
   }
 };
 
 // --- app user ---
 exports.appUser = async (req, res) => {
-  const { Name, Email, Password, FLAG, Profile, UserID } = req.body;
+  const { Name, Email, Password, FLAG, Profile, UserID, BulkUserID } = req.body;
   try {
     if (FLAG === "I") {
       if (!Name || !Email || !Password || !Profile) {
@@ -315,29 +382,45 @@ exports.appUser = async (req, res) => {
 
       const authToken = jwt.sign(data, JWT_SECRET);
 
-      res.status(201).json({
-        StatusCode: 200,
-        Message: "success",
-        authToken,
-      });
+      try {
+        res.status(201).json({
+          StatusCode: 200,
+          Message: "Success",
+          authToken,
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "Error Creating User",
+          Error: error.message,
+        });
+      }
     } else if (FLAG === "S") {
       const userdata = await appUser.find();
-      res.status(201).json({
-        StatusCode: 200,
-        Message: "success",
-        Values: userdata.length <= 0 ? null : userdata,
-      });
+      try {
+        res.status(200).json({
+          StatusCode: 200,
+          Message: "Success",
+          Values: userdata.length <= 0 ? null : userdata,
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "Error fetching users",
+          Error: error.message,
+        });
+      }
     } else if (FLAG === "V") {
       const showuser = await appUser.findById({ _id: UserID });
       if (showuser) {
-        res.status(201).json({
+        res.status(200).json({
           StatusCode: 200,
-          Message: "success",
+          Message: "Success",
           Values: [showuser],
         });
       } else {
-        res.status(401).json({
-          StatusCode: 400,
+        res.status(404).json({
+          StatusCode: 404,
           Message: "User not found",
         });
       }
@@ -384,27 +467,81 @@ exports.appUser = async (req, res) => {
       await appUser.findByIdAndUpdate(UserID, update, {
         new: true,
       });
-      res.status(201).json({
-        StatusCode: 200,
-        Message: "success",
-      });
+
+      try {
+        res.status(200).json({
+          StatusCode: 200,
+          Message: "Success",
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "Error updating users",
+          Error: error.message,
+        });
+      }
     } else if (FLAG === "D") {
       const deleteUser = await appUser.findByIdAndDelete({ _id: UserID });
+
+      if (!deleteUser) {
+        return res.status(404).json({
+          StatusCode: 404,
+          Message: "User not found",
+        });
+      }
 
       // Delete the image from Cloudinary
       await cloudinary.uploader.destroy(deleteUser.Profile.public_id);
 
-      res.status(201).json({
-        StatusCode: 200,
-        Message: "success",
+      try {
+        res.status(200).json({
+          StatusCode: 200,
+          Message: "Success",
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "Error deleting user",
+          Error: error.message,
+        });
+      }
+    } else if (FLAG === "BD") {
+      // Perform bulk delete operation in MongoDB
+      const deleteResults = await appUser.deleteMany({
+        _id: { $in: BulkUserID },
       });
+
+      // Loop through the deleted user IDs and delete their images from Cloudinary
+      const deleteImagePromises = BulkUserID.map(async (userId) => {
+        const user = await User.findById(userId);
+        if (user && user.Profile && user.Profile.public_id) {
+          // Delete image from Cloudinary
+          await cloudinary.uploader.destroy(user.Profile.public_id);
+        }
+      });
+      await Promise.all(deleteImagePromises);
+
+      try {
+        res.status(200).json({
+          StatusCode: 200,
+          Message: "Success",
+          DeletedCount: deleteResults.deletedCount,
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "An error occurred while performing bulk delete",
+          Error: error.message,
+        });
+      }
     } else {
       res.status(400).json({ StatusCode: 400, Message: "Invalid flag" });
     }
   } catch (error) {
-    res.status(401).json({
-      StatusCode: 400,
-      Message: error,
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
     });
   }
 };
@@ -412,28 +549,73 @@ exports.appUser = async (req, res) => {
 // --- get app user ---
 exports.getAppUser = async (req, res) => {
   try {
+    const last = req.query.last;
+    const isVerified = req.query.isVerified;
+    const sortby = req.query.sortby;
     const page = parseInt(req.query.page) || 1;
     const pageSize = parseInt(req.query.pageSize) || 10; // default page size is 10
     const skip = (page - 1) * pageSize;
+
+    const searchQuery = req.query.search || ""; // Extract the search query parameter from the request, default to an empty string if not provided
+
+    // Constructing the query to search for users by name and apply pagination
+    const query = {
+      Name: { $regex: searchQuery, $options: "i" }, // Case-insensitive regex search for the provided name
+    };
+
+    let sortQuery = { createdAt: -1 }; // Default sorting by createdAt date
+
+    if (sortby === "name") {
+      sortQuery = { Name: 1 }; // Sorting by name in ascending order
+      // query.collation = { locale: "en", caseLevel: false };
+    } else if (sortby === "login") {
+      sortQuery = { LastLoggedIn: -1 }; // Sorting by lastLoggedIn date in descending order (recently logged-in users first)
+      query.LastLoggedIn = { $exists: true }; // Filter out users where lastLoggedIn exists
+    }
+    // Check if the 'last' parameter is true and reverse the sorting order if necessary
+    if (last === "true" && sortQuery) {
+      for (let key in sortQuery) {
+        sortQuery[key] *= -1; // Reverse the sorting order
+      }
+    } else if (last === "true") {
+      // If sortQuery is not set, it means no valid sortby parameter was provided, so default to sorting by createdAt
+      sortQuery = { createdAt: -1 }; // Sorting by createdAt date in descending order (recently created users first)
+    }
+
+    // Adding verification status filtering to the query
+    if (isVerified === "-1") {
+      // No filter by verification status
+    } else if (isVerified === "Y") {
+      query.Status = "Verified";
+    } else if (isVerified === "N") {
+      query.Status = "Unverified";
+    }
+    // Retrieve users based on the constructed query
     const userdata = await appUser
-      .find()
+      .find(query)
+      .collation({ locale: "en", caseLevel: false })
       .skip(skip)
       .limit(pageSize)
-      .sort({ createdAt: -1 });
-    res.status(201).json({
+      .sort(sortQuery);
+
+    // Count documents based on the same query to get accurate total count
+    const totalDocuments = await appUser.countDocuments(query);
+
+    res.status(200).json({
       StatusCode: 200,
       Message: "success",
       Pagination: {
         page,
         pageSize,
-        total: await appUser.countDocuments(), // Total number of documents in the collection
+        total: totalDocuments, // Total number of documents in the collection
       },
       Values: userdata.length <= 0 ? null : userdata,
     });
   } catch (error) {
-    res.status(401).json({
-      StatusCode: 400,
-      Message: error,
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
     });
   }
 };
