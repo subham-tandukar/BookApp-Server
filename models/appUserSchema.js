@@ -27,6 +27,9 @@ const appUserSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    LastLoggedIn: {
+      type: Date, // Field to store the last logged in date
+    },
   },
   { timestamps: true }
 );

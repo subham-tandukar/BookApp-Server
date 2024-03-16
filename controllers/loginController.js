@@ -82,6 +82,10 @@ exports.appLogin = async (req, res) => {
       });
     }
 
+    // Update the lastLoggedIn field
+    user.LastLoggedIn = new Date();
+    await user.save(); // Save the updated user document
+
     const data = {
       user: {
         id: user.id,
