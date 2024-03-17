@@ -19,6 +19,7 @@ exports.postBook = async (req, res) => {
     FLAG,
     UserID,
     Image,
+    BulkBookID,
   } = req.body;
 
   try {
@@ -69,11 +70,37 @@ exports.postBook = async (req, res) => {
         UserID,
       });
       await bookData.save();
-      res.status(201).json({
-        StatusCode: 200,
-        Message: "success",
-        Image: bookData.Image,
-      });
+
+      // Delete only the images inside the "library" folder
+      try {
+        const { resources } = await cloudinary.api.resources({
+          type: "upload",
+          prefix: "library/", // Specify the folder to delete its contents
+          max_results: 500, // Adjust this value based on the number of files you have
+        });
+
+        const deletePromises = resources.map(async (resource) => {
+          await cloudinary.uploader.destroy(resource.public_id);
+        });
+
+        await Promise.all(deletePromises);
+      } catch (error) {
+        console.error("Error deleting images inside folder:", error);
+      }
+
+      try {
+        res.status(201).json({
+          StatusCode: 200,
+          Message: "success",
+          Image: bookData.Image,
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "Error creating book",
+          Error: error.message,
+        });
+      }
     } else if (FLAG === "U") {
       if (!BookName || !Image || !Auther || !Status) {
         return res.status(422).json({
@@ -99,9 +126,10 @@ exports.postBook = async (req, res) => {
 
       let bookImg;
 
-      if (!changeImage) {
-        const updateBook = await books.findById({ _id: BookID });
+      const updateBook = await books.findById({ _id: BookID });
+      const oldImg = updateBook.Image.url;
 
+      if (oldImg !== Image) {
         await cloudinary.uploader.destroy(updateBook.Image.public_id);
 
         bookImg = await cloudinary.uploader.upload(Image, {
@@ -111,7 +139,7 @@ exports.postBook = async (req, res) => {
 
       let update;
 
-      if (changeImage === false) {
+      if (oldImg !== Image) {
         update = {
           BookName,
           Auther,
@@ -148,41 +176,112 @@ exports.postBook = async (req, res) => {
       await books.findByIdAndUpdate(BookID, update, {
         new: true,
       });
-      res.status(201).json({
-        StatusCode: 200,
-        Message: "success",
-      });
+
+      // Delete only the images inside the "library" folder
+      try {
+        const { resources } = await cloudinary.api.resources({
+          type: "upload",
+          prefix: "library/", // Specify the folder to delete its contents
+          max_results: 500, // Adjust this value based on the number of files you have
+        });
+
+        const deletePromises = resources.map(async (resource) => {
+          await cloudinary.uploader.destroy(resource.public_id);
+        });
+
+        await Promise.all(deletePromises);
+      } catch (error) {
+        console.error("Error deleting images inside folder:", error);
+      }
+
+      try {
+        res.status(200).json({
+          StatusCode: 200,
+          Message: "success",
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "Error updating book",
+          Error: error.message,
+        });
+      }
     } else if (FLAG === "SI") {
       const showbook = await books.findById({ _id: BookID });
       if (showbook) {
-        res.status(201).json({
+        res.status(200).json({
           StatusCode: 200,
           Message: "success",
           Values: [showbook],
         });
       } else {
-        res.status(401).json({
-          StatusCode: 400,
+        res.status(404).json({
+          StatusCode: 404,
           Message: "Book not found",
         });
       }
     } else if (FLAG === "D") {
       const deleteBook = await books.findByIdAndDelete({ _id: BookID });
 
+      if (!deleteBook) {
+        return res.status(404).json({
+          StatusCode: 404,
+          Message: "Book not found",
+        });
+      }
+
       // Delete the image from Cloudinary
       await cloudinary.uploader.destroy(deleteBook.Image.public_id);
 
-      res.status(201).json({
-        StatusCode: 200,
-        Message: "success",
+      try {
+        res.status(200).json({
+          StatusCode: 200,
+          Message: "Success",
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "Error deleting book",
+          Error: error.message,
+        });
+      }
+    } else if (FLAG === "BD") {
+      // Perform bulk delete operation in MongoDB
+      const deleteResults = await books.deleteMany({
+        _id: { $in: BulkBookID },
       });
+
+      // Loop through the deleted user IDs and delete their images from Cloudinary
+      const deleteImagePromises = BulkBookID.map(async (bookid) => {
+        const book = await books.findById(bookid);
+        if (book && book.Image && book.Image.public_id) {
+          // Delete image from Cloudinary
+          await cloudinary.uploader.destroy(book.Image.public_id);
+        }
+      });
+      await Promise.all(deleteImagePromises);
+
+      try {
+        res.status(200).json({
+          StatusCode: 200,
+          Message: "Success",
+          DeletedCount: deleteResults.deletedCount,
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "An error occurred while performing bulk delete",
+          Error: error.message,
+        });
+      }
     } else {
       res.status(400).json({ StatusCode: 400, Message: "Invalid flag" });
     }
   } catch (error) {
-    res.status(401).json({
-      StatusCode: 400,
-      Message: error,
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
     });
   }
 };
@@ -254,15 +353,16 @@ exports.getBook = async (req, res) => {
         .sort({ createdAt: -1 });
     } else {
     }
-    res.status(201).json({
+    res.status(200).json({
       StatusCode: 200,
       Message: "success",
       Values: bookdata.length <= 0 ? null : bookdata,
     });
   } catch (error) {
-    res.status(401).json({
-      StatusCode: 400,
-      Message: "User does not exist",
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
     });
   }
 };

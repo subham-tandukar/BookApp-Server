@@ -199,7 +199,7 @@ exports.user = async (req, res) => {
 
       // Loop through the deleted user IDs and delete their images from Cloudinary
       const deleteImagePromises = BulkUserID.map(async (userId) => {
-        const user = await User.findById(userId);
+        const user = await User.findById(UserID);
         if (user && user.Profile && user.Profile.public_id) {
           // Delete image from Cloudinary
           await cloudinary.uploader.destroy(user.Profile.public_id);
@@ -513,7 +513,7 @@ exports.appUser = async (req, res) => {
 
       // Loop through the deleted user IDs and delete their images from Cloudinary
       const deleteImagePromises = BulkUserID.map(async (userId) => {
-        const user = await User.findById(userId);
+        const user = await appUser.findById(userId);
         if (user && user.Profile && user.Profile.public_id) {
           // Delete image from Cloudinary
           await cloudinary.uploader.destroy(user.Profile.public_id);
